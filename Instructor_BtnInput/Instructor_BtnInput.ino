@@ -1,5 +1,9 @@
 #include <Nextion.h>
+<<<<<<< HEAD
 
+=======
+int i = 5;
+>>>>>>> 308177aa18fd20fc28575030f74ad79e2031dcb7
 NexButton okButton = NexButton(0, 5, "okButton"); //(page, id, objectName)
 NexPage page0 = NexPage(0, 0, "page0");
 int touched = 0;
