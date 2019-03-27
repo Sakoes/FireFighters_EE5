@@ -1,9 +1,9 @@
-//#include <Nextion.h>
+#include <Nextion.h>
 
 NexButton okButton = NexButton(0, 5, "okButton"); //(page, id, objectName)
 NexPage page0 = NexPage(0, 0, "page0");
 int touched = 0;
-string btnNames[5] = {"down.val=", "right.val=", "ok.val=", "left.val=", "up.val="};
+String btnNames[5] = {"down.val=", "right.val=", "ok.val=", "left.val=", "up.val="};
 
 NexTouch *nex_listen_list[] =
 {
@@ -23,6 +23,9 @@ void okButtonPopCallback(void *ptr){
 }
 
 void setup() {
+  int i = 5;
+
+
   pinMode(3, INPUT);
   pinMode(4, INPUT);
   pinMode(5, INPUT);
@@ -40,10 +43,13 @@ void setup() {
 void loop() {
   nexLoop(nex_listen_list);
 
+
+}
+
+void readBtnInputs(){
   bool inputStates[5];
   char displayCom [64];
 
-  //Nakijken of inputstates en btnNames overeen komen
   inputStates[0] = digitalRead(3);
   inputStates[1] = digitalRead(4);
   inputStates[2] = digitalRead(5);
