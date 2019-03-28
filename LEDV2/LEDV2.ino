@@ -9,6 +9,7 @@ boolean  ackflag    =   false; boolean  oldSwitch  =   LOW; boolean  newSwitch  
 boolean  alarmFlag1 =   false;
 boolean  alarmFlag2 =   false;  // dont forget to change it back this is for testing both should be false
 int gasCon; int gasType; //gas info
+int amountOfGas[4];  // CH4 IBUT O2 CO
 void setup() {
   initializePins();
   startMillis=millis();
@@ -30,13 +31,30 @@ void gasConcentration(int gasType,int gasCon){   //info about gasType and gas co
         3   O2   : 25    19  23  % lower than 19 higher than 23 is not okay
         4   CO   : 500   20  100 ppm
   */
-     if(gasType==1)       {setAlarm(gasCon,10,20);}
-     else if(gasType==2)  { setAlarm(gasCon,100,200);}
-     else if(gasType==3)  { setAlarm(gasCon,19,23);}
-     else if(gasType==4)  {setAlarm(gasCon,20,100);}
+     if(gasType==1)       {setAlarm(gasCon,10,20);
+     amountOfGas[0]=gasCon;}
+     else if(gasType==2)  { setAlarm(gasCon,100,200);
+     amountOfGas[1]=gasCon;}
+     else if(gasType==3)  { setAlarmO2(gasCon,19,23);
+     amountOfGas[2]=gasCon;}
+     else if(gasType==4)  {setAlarm(gasCon,20,100);
+     amountOfGas[3]=gasCon;}
   }
 void setAlarm( int gasCon, int A1, int A2){  //choose between alarm 1 and alarm 2 and set alarm flag
    if(gasCon>=A1 && gasCon<A2){
+      alarmFlag2=false;
+      alarmFlag1=true;}
+    else if (gasCon>=A2){
+        alarmFlag2=true;
+        alarmFlag1=false;
+        }
+    else {
+        alarmFlag2=false;
+        alarmFlag1=false;
+      }
+}
+void setAlarmO2( int gasCon, int A1, int A2){  //choose between alarm 1 and alarm 2 and set alarm flag
+   if(gasCon<=A1){
       alarmFlag2=false;
       alarmFlag1=true;}
     else if (gasCon>=A2){
@@ -56,8 +74,8 @@ void alarm(){
     digitalWrite(LED1,!digitalRead(LED1));
     digitalWrite(LED2,!digitalRead(LED2));
     digitalWrite(LED3,!digitalRead(LED3));
-    if(alarmFlag1==true && alarmFlag2==false ){tone(BUZZER,440,250 );}
-    if(alarmFlag2==true && alarmFlag1==false) {tone(BUZZER,261,250);}
+    if(alarmFlag1==true && alarmFlag2==false ){tone(BUZZER,261,250 );}
+    if(alarmFlag2==true && alarmFlag1==false) {tone(BUZZER,440,250);}
     startMillis=currentMillis;
     }
     else {stopAlarm();}
