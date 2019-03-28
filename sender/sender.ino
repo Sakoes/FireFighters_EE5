@@ -63,6 +63,10 @@ int gas3 = 0;
 int gas3prev;
 decimal gas3point = NO;
 
+int gas[3] = {0};
+int gasPrev[3];
+decimal gasPoint[3] = {NO};
+
 NexTouch *nex_listen_list[] =
 {
   &page0,
