@@ -64,8 +64,7 @@ decimal gasPoint[3];
 
 
 
-NexTouch *nex_listen_list[] =
-{
+NexTouch *nex_listen_list[] = {
   &page0,
   &gas1Text,
   &gas2Text,
@@ -141,7 +140,8 @@ void gas3TextPopCallback(void *ptr) {
 }
 
 void sendButtonPopCallback(void *ptr) {
-  sendData();
+  int message = gas[1];  // send a message
+  sendMessage(message);
 }
 
 
@@ -263,15 +263,41 @@ void updateValue() {
 }
 
 void updateHome() {
-  if (gasPoint[currentGas-1] == SET) {
-    int t1 = gas[currentGas-1] / 10;
-    int t2 = gas[currentGas-1] - (gas[currentGas-1] / 10) * 10;
-    sprintf(val, "gas%ivalue.txt=\"%i,%i\"", currentGas, t1, t2);
+  if (gasPoint[0] == SET) {
+    int t1 = gas[0] / 10;
+    int t2 = gas[0] - (gas[0] / 10) * 10;
+    sprintf(val, "gas1value.txt=\"%i,%i\"", t1, t2);
     Serial.print(val);
     serialEnd();
   }
   else {
-    sprintf(val, "gas%ivalue.txt=\"%i\"", currentGas, gas[currentGas-1]);
+    sprintf(val, "gas1value.txt=\"%i\"", gas[0]);
+    Serial.print(val);
+    serialEnd();
+  }
+
+  if (gasPoint[1] == SET) {
+    int t1 = gas[1] / 10;
+    int t2 = gas[1] - (gas[1] / 10) * 10;
+    sprintf(val, "gas2value.txt=\"%i,%i\"", t1, t2);
+    Serial.print(val);
+    serialEnd();
+  }
+  else {
+    sprintf(val, "gas2value.txt=\"%i\"", gas[1]);
+    Serial.print(val);
+    serialEnd();
+  }
+
+  if (gasPoint[2] == SET) {
+    int t1 = gas[2] / 10;
+    int t2 = gas[2] - (gas[2] / 10) * 10;
+    sprintf(val, "gas3value.txt=\"%i,%i\"", t1, t2);
+    Serial.print(val);
+    serialEnd();
+  }
+  else {
+    sprintf(val, "gas3value.txt=\"%i\"", gas[2]);
     Serial.print(val);
     serialEnd();
   }
@@ -285,19 +311,6 @@ void throwDecimalSetError() {
   serialEnd();
 }
 
-void sendData() {
-  LoRa.beginPacket();
-  LoRa.write(destination);
-  LoRa.write(lowByte(gas[0]));
-  LoRa.write(highByte(gas[0]);
-  LoRa.write(gasPoint[0]);
-  LoRa.write(lowByte(gas[1]));
-  LoRa.write(highByte(gas[1]));
-  LoRa.write(gasPoint[1]);
-  LoRa.write(lowByte(gas[2]));
-  LoRa.write(highByte(gas[2]));
-  LoRa.write(gasPoint[2]);
-  LoRa.endPacket();
 }
 
 
