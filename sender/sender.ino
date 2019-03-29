@@ -1,39 +1,40 @@
-#include <SPI.h>
+#include <SPI.h>              // include libraries
 #include <LoRa.h>
 #include <Nextion.h>
-/// testing github
-/*
- * Button Input variables
- */
+
 String btnNames[5] = {"down.val=", "right.val=", "ok.val=", "left.val=", "up.val="};
 bool inputStates[5] = {0};
 
-/*
- *   LoRa variables
- */
+
 enum decimal {
   NO,
   CURRENT,
   SET
 };
+
+
 const int csPin = 10;          // LoRa radio chip select
 const int resetPin = 9;       // LoRa radio reset
 const int irqPin = 2;         // change for your board; must be a hardware interrupt pin
+
 byte msgCount = 0;            // count of outgoing messages
 byte localAddress = 0xBB;     // address of this device
 byte destination = 0xFF;      // destination to send to
 
-/*
- * Display pages, variables and touchbuttons
- * (page, id, objectName)
- */
+
+
+//(page, id, objectName)
 NexPage page0 = NexPage(0, 0, "page0");
-NexPage page1 = NexPage(1, 0, "page1");
 NexText gas1Text = NexText(0, 1, "gas1");
 NexText gas2Text = NexText(0, 2, "gas2");
 NexText gas3Text = NexText(0, 3, "gas3");
-NexText errorMessageText = NexText(1, 17, "errorMessage");
+NexText gas1ValueText = NexText(0, 7, "gas1value");
+NexText gas2ValueText = NexText(0, 8, "gas2value");
+NexText gas3ValueText = NexText(0, 9, "gas3value");
 NexButton sendButton = NexButton(0, 10, "send");
+
+
+NexPage page1 = NexPage(1, 0, "page1");
 NexButton okButton = NexButton(1, 12, "ok");
 NexButton cancelButton = NexButton(1, 14, "cancel");
 NexButton dotButton = NexButton(1, 15, "dot");
@@ -48,20 +49,20 @@ NexButton sixButton = NexButton(1, 7, "b6");
 NexButton sevenButton = NexButton(1, 8, "b7");
 NexButton eightButton = NexButton(1, 9, "b8");
 NexButton nineButton = NexButton(1, 10, "b9");
-char val[50] = {0}; //Buffer to send between display and arduino
+
+
+
+
+char val[50] = {0};
 
 int currentGas = 0;
 
 //These are the values of the gasses. If floats are needed, they are reformatted in the UI to show a decimal point
-int gas1 = 0;
-int gas1prev;
-decimal gas1point = NO;
-int gas2 = 0;
-int gas2prev;
-decimal gas2point = NO;
-int gas3 = 0;
-int gas3prev;
-decimal gas3point = NO;
+int gas[3];
+int gasPrev[3];
+decimal gasPoint[3];
+
+
 
 NexTouch *nex_listen_list[] =
 {
@@ -69,9 +70,11 @@ NexTouch *nex_listen_list[] =
   &gas1Text,
   &gas2Text,
   &gas3Text,
+  &gas1ValueText,
+  &gas2ValueText,
+  &gas3ValueText,
   &sendButton,
   &page1,
-  &errorMessageText,
   &okButton,
   &cancelButton,
   &dotButton,
@@ -89,6 +92,14 @@ NexTouch *nex_listen_list[] =
   NULL
 };  // End of touch event list
 
+
+
+void serialEnd() {
+  Serial.write(0xff);
+  Serial.write(0xff);
+  Serial.write(0xff);
+}
+
 void readBtnInputs(){
   char displayCom [64];
 
@@ -98,14 +109,15 @@ void readBtnInputs(){
   inputStates[3] = digitalRead(A0);
   inputStates[4] = digitalRead(A5);
 
-  for(int i = 0; i < 5; i++){
-    sprintf (displayCom, "%s%b", btnNames[i], inputStates[i]);
-    Serial.print(displayCom);
-    Serial.write(0xff);
-    Serial.write(0xff);
-    Serial.write(0xff);
-  }
+
+
+//  for(int i = 0; i < 5; i++){
+//    sprintf (displayCom, "%s%b", btnNames[i], inputStates[i]);
+//    Serial.print(displayCom);
+//    serialEnd();
+//  }
 }
+
 
 void gas1TextPopCallback(void *ptr) {
   currentGas = 1;
@@ -128,136 +140,65 @@ void gas3TextPopCallback(void *ptr) {
   updateValue();
 }
 
-void sendButtonPopCallback(void *ptr){
-  int message = gas1;  // send a message
+void sendButtonPopCallback(void *ptr) {
+  int message = gas[1];  // send a message
   sendMessage(message);
-  Serial.println("Sending " + message);
-
 }
 
+
 void okButtonPopCallback(void *ptr) {
-  gas1prev = gas1;
-  gas2prev = gas2;
-  gas3prev = gas3;
-  currentGas = 0;
+  for (int i = 0; i < 3; i++) {
+    gasPrev[i] = gas[i];
+  }
   updateHome();
 }
 
 void cancelButtonPopCallback(void *ptr) {
-  gas1 = gas1prev;
-  gas2 = gas2prev;
-  gas3 = gas3prev;
-  currentGas = 0;
+  for (int i = 0; i < 3; i++) {
+    gas[i] = gasPrev[i];
+  }
   updateHome();
 }
 
 void dotButtonPushCallback(void *ptr) {
-  if (currentGas == 1) {
-    if (gas1point != NO) {
-      throwDecimalSetError();
-    }
-    else {
-      gas1point = CURRENT;
-    }
-  }
-  else if (currentGas == 2) {
-    if (gas2point != NO) {
-      throwDecimalSetError();
-    }
-    else {
-      gas2point = CURRENT;
-    }
+  if (gasPoint[currentGas - 1] != NO) {
+    throwDecimalSetError();
   }
   else {
-    if (gas3point != NO) {
-      throwDecimalSetError();
-    }
-    else {
-      gas3point = CURRENT;
-    }
+    gasPoint[currentGas - 1] = CURRENT;
   }
   updateValue();
 }
 
 void backButtonPushCallback(void *ptr) {
-  if (currentGas == 1) {
-    if (gas1point == SET) {
-      gas1point = CURRENT;
-      gas1 /= 10;
-    }
-    else if (gas1point == CURRENT) {
-      gas1point = NO;
-    }
-    else{
-      gas1 /= 10;
-    }
+  if (gasPoint[currentGas - 1] == SET) {
+    gasPoint[currentGas - 1] = CURRENT;
+    gas[currentGas - 1] /= 10;
   }
-  else if (currentGas == 2) {
-    if (gas2point == SET) {
-      gas2point = CURRENT;
-      gas2 /= 10;
-    }
-    else if (gas2point == CURRENT) {
-      gas2point = NO;
-    }
-    else{
-      gas2 /= 10;
-    }
+  else if (gasPoint[currentGas - 1] == CURRENT) {
+    gasPoint[currentGas - 1] = NO;
   }
   else {
-    if (gas3point == SET) {
-      gas3point = CURRENT;
-      gas3 /= 10;
-    }
-    else if (gas3point == CURRENT) {
-      gas3point = NO;
-    }
-    else{
-      gas3 /= 10;
-    }
+    gas[currentGas - 1] /= 10;
   }
   updateValue();
 }
 
-void numberPushed(int x){
-  if (currentGas == 1) {
-    if (gas1point == SET) {
-      throwDecimalSetError();
-    }
-    else {
-      if (gas1point == CURRENT) {
-        gas1point = SET;
-      }
-      gas1 *= 10;
-      gas1 += x;
-    }
-  }
-  else if (currentGas == 2) {
-    if (gas2point == SET) {
-      throwDecimalSetError();
-    }
-    else {
-      if (gas2point == CURRENT) {
-        gas2point = SET;
-      }
-      gas2 *= 10;
-      gas2 += x;
-    }
+
+void numberPushed(int x) {
+  if (gasPoint[currentGas - 1] == SET) {
+    throwDecimalSetError();
   }
   else {
-    if (gas3point == SET) {
-      throwDecimalSetError();
+    if (gasPoint[currentGas - 1] == CURRENT) {
+      gasPoint[currentGas - 1] = SET;
     }
-    else {
-      if (gas3point == CURRENT) {
-        gas3point = SET;
-      }
-      gas3 *= 10;
-      gas3 += x;
-    }
+    gas[currentGas - 1] *= 10;
+    gas[currentGas - 1] += x;
   }
   updateValue();
 }
+
 
 void zeroButtonPushCallback(void *ptr) {
   numberPushed(0);
@@ -287,9 +228,11 @@ void sixButtonPushCallback(void *ptr) {
   numberPushed(6);
 }
 
+
 void sevenButtonPushCallback(void *ptr) {
   numberPushed(7);
 }
+
 
 void eightButtonPushCallback(void *ptr) {
   numberPushed(8);
@@ -299,158 +242,95 @@ void nineButtonPushCallback(void *ptr) {
   numberPushed(9);
 }
 
+
 void updateValue() {
-  if (currentGas == 1) {
-    if (gas1point == SET) {
-      int t1 = gas1 / 10;
-      int t2 = gas1 - (gas1 / 10) * 10;
-      sprintf(val, "gasValue.txt=\"%i,%i\"", t1, t2);
-      Serial.print(val);
-      serialEnd();
-    }
-    else if (gas1point == CURRENT) {
-      sprintf(val, "gasValue.txt=\"%i,\"", gas1);
-      Serial.print(val);
-      serialEnd();
-    }
-    else {
-      sprintf(val, "gasValue.txt=\"%i\"", gas1);
-      Serial.print(val);
-      serialEnd();
-    }
+  if(gasPoint[currentGas-1] == SET) {
+    int t1 = gas[currentGas-1] / 10;
+    int t2 = gas[currentGas-1] - (gas[currentGas-1] / 10) * 10;
+    sprintf(val, "gasValue.txt=\"%i,%i\"", t1, t2);
+    Serial.print(val);
+    serialEnd();
   }
-  else if (currentGas == 2) {
-    if (gas2point == SET) {
-      int t1 = gas2 / 10;
-      int t2 = gas2 - (gas2 / 10) * 10;
-      sprintf(val, "gasValue.txt=\"%i,%i\"", t1, t2);
-      Serial.print(val);
-      serialEnd();
-    }
-    else if (gas2point == CURRENT) {
-      sprintf(val, "gasValue.txt=\"%i,\"", gas2);
-      Serial.print(val);
-      serialEnd();
-    }
-    else {
-      sprintf(val, "gasValue.txt=\"%i\"", gas2);
-      Serial.print(val);
-      serialEnd();
-    }
+  else if(gasPoint[currentGas-1] == CURRENT) {
+    sprintf(val, "gasValue.txt=\"%i,\"", gas[currentGas-1]);
+    Serial.print(val);
+    serialEnd();
   }
-  else {
-    if (gas3point == SET) {
-      int t1 = gas3 / 10;
-      int t2 = gas3 - (gas3 / 10) * 10;
-      sprintf(val, "gasValue.txt=\"%i,%i\"", t1, t2);
-      Serial.print(val);
-      serialEnd();
-    }
-    else if (gas3point == CURRENT) {
-      sprintf(val, "gasValue.txt=\"%i,\"", gas3);
-      Serial.print(val);
-      serialEnd();
-    }
-    else {
-      sprintf(val, "gasValue.txt=\"%i\"", gas3);
-      Serial.print(val);
-      serialEnd();
-    }
+  else{
+    sprintf(val, "gasValue.txt=\"%i\"", gas[currentGas-1]);
+    Serial.print(val);
+    serialEnd();
   }
 }
 
-void updateHome(){
-  if (gas1point == SET) {
-    int t1 = gas1 / 10;
-    int t2 = gas1 - (gas1 / 10) * 10;
+void updateHome() {
+  if (gasPoint[0] == SET) {
+    int t1 = gas[0] / 10;
+    int t2 = gas[0] - (gas[0] / 10) * 10;
     sprintf(val, "gas1value.txt=\"%i,%i\"", t1, t2);
     Serial.print(val);
     serialEnd();
   }
   else {
-    sprintf(val, "gas1value.txt=\"%i\"", gas1);
+    sprintf(val, "gas1value.txt=\"%i\"", gas[0]);
     Serial.print(val);
     serialEnd();
   }
 
-  if (gas2point == SET) {
-    int t1 = gas2 / 10;
-    int t2 = gas2 - (gas2 / 10) * 10;
+  if (gasPoint[1] == SET) {
+    int t1 = gas[1] / 10;
+    int t2 = gas[1] - (gas[1] / 10) * 10;
     sprintf(val, "gas2value.txt=\"%i,%i\"", t1, t2);
     Serial.print(val);
     serialEnd();
   }
   else {
-    sprintf(val, "gas2value.txt=\"%i\"", gas2);
+    sprintf(val, "gas2value.txt=\"%i\"", gas[1]);
     Serial.print(val);
     serialEnd();
   }
 
-  if (gas3point == SET) {
-    int t1 = gas3 / 10;
-    int t2 = gas3 - (gas3 / 10) * 10;
+  if (gasPoint[2] == SET) {
+    int t1 = gas[2] / 10;
+    int t2 = gas[2] - (gas[2] / 10) * 10;
     sprintf(val, "gas3value.txt=\"%i,%i\"", t1, t2);
     Serial.print(val);
     serialEnd();
   }
   else {
-    sprintf(val, "gas3value.txt=\"%i\"", gas3);
+    sprintf(val, "gas3value.txt=\"%i\"", gas[2]);
     Serial.print(val);
     serialEnd();
   }
+  currentGas = 0;
 }
 
-void serialEnd() {
-  Serial.write(0xff);
-  Serial.write(0xff);
-  Serial.write(0xff);
-}
+
 
 void throwDecimalSetError() {
-  errorMessageText.setText("Decimal is already set.");
+  Serial.print(F("errorMessage.txt=\"Decimal is already set.\""));
+  serialEnd();
 }
 
 void sendMessage(int number) {
-  LoRa.beginPacket();                   // start packet
-  LoRa.write(destination);              // add destination address
-  LoRa.write(localAddress);             // add sender address
-  LoRa.write(msgCount);                 // add message ID
-  sprintf(val, "%i", number);
-  String str(val);
-  LoRa.write(str.length());        // add payload length
-  LoRa.print(str);                 // add payload
-  LoRa.endPacket();                     // finish packet and send it
-  msgCount++;                           // increment message ID
+//  LoRa.beginPacket();                   // start packet
+//  LoRa.write(destination);              // add destination address
+//  LoRa.write(localAddress);             // add sender address
+//  LoRa.write(msgCount);                 // add message ID
+//  sprintf(val, "%i", number);
+//  String str(val);
+//  LoRa.write(str.length());        // add payload length
+//  LoRa.print(str);                 // add payload
+//  LoRa.endPacket();                     // finish packet and send it
+//  msgCount++;                           // increment message ID
 }
 
-void onReceive(int packetSize) {
-  if (packetSize == 0) return;          // if there's no packet, return
-
-  // read packet header bytes:
-  int recipient = LoRa.read();          // recipient address
-  byte sender = LoRa.read();            // sender address
-  byte incomingMsgId = LoRa.read();     // incoming msg ID
-  byte incomingLength = LoRa.read();    // incoming msg length
-
-  String incoming = "";
-
-  while (LoRa.available()) {
-    incoming += (char)LoRa.read();
-  }
-
-  if (incomingLength != incoming.length()) {   // check length for error
-    return;                             // skip rest of function
-  }
-
-  // if the recipient isn't this device or broadcast,
-  if (recipient != localAddress && recipient != 0xFF) {
-    return;                             // skip rest of function
-  }
-}
 
 
 void setup() {
   Serial.begin(9600);
+
+  // put your setup code here, to run once:
   while (!Serial);
 
   // override the default CS, reset, and IRQ pins (optional)
@@ -460,8 +340,9 @@ void setup() {
     while (true);                       // if failed, do nothing
   }
 
-  Serial.println("LoRa init succeeded.");
 
+
+  // put your setup code here, to run once:
   pinMode(3, INPUT);
   pinMode(4, INPUT);
   pinMode(5, INPUT);
@@ -473,7 +354,11 @@ void setup() {
   gas1Text.attachPop(gas1TextPopCallback, &gas1Text);
   gas2Text.attachPop(gas2TextPopCallback, &gas2Text);
   gas3Text.attachPop(gas3TextPopCallback, &gas3Text);
+  gas1ValueText.attachPop(gas1TextPopCallback, &gas1ValueText);
+  gas2ValueText.attachPop(gas2TextPopCallback, &gas2ValueText);
+  gas3ValueText.attachPop(gas3TextPopCallback, &gas3ValueText);
   sendButton.attachPop(sendButtonPopCallback, &sendButton);
+
 
   okButton.attachPop(okButtonPopCallback, &okButton);
   cancelButton.attachPop(cancelButtonPopCallback, &cancelButton);
@@ -494,7 +379,7 @@ void setup() {
 void loop() {
 
   nexLoop(nex_listen_list);
-  onReceive(LoRa.parsePacket());
   readBtnInputs();
+  // put your main code here, to run repeatedly:
 
 }
