@@ -288,15 +288,11 @@ void throwDecimalSetError() {
 void sendData() {
   LoRa.beginPacket();
   LoRa.write(destination);
-  LoRa.write(lowByte(gas[0]));
-  LoRa.write(highByte(gas[0]);
-  LoRa.write(gasPoint[0]);
-  LoRa.write(lowByte(gas[1]));
-  LoRa.write(highByte(gas[1]));
-  LoRa.write(gasPoint[1]);
-  LoRa.write(lowByte(gas[2]));
-  LoRa.write(highByte(gas[2]));
-  LoRa.write(gasPoint[2]);
+  for(int i = 0; i < 3; i++){
+    LoRa.write(lowByte(gas[i]));
+    LoRa.write(highByte(gas[i]);
+    LoRa.write(gasPoint[i]);
+  }
   LoRa.endPacket();
 }
 
