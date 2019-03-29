@@ -290,7 +290,7 @@ void sendData() {
   LoRa.write(destination);
   for(int i = 0; i < 3; i++){
     LoRa.write(lowByte(gas[i]));
-    LoRa.write(highByte(gas[i]);
+    LoRa.write(highByte(gas[i]));
     LoRa.write(gasPoint[i]);
   }
   LoRa.endPacket();
