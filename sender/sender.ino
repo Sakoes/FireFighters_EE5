@@ -297,7 +297,11 @@ void sendData() {
   LoRa.beginPacket();
   LoRa.write(destination);
   LoRa.write(lowByte(gas[0]));
+<<<<<<< HEAD
   LoRa.write(highByte(gas[0]));
+=======
+  LoRa.write(highByte(gas[0]);
+>>>>>>> 5bc7a97c330584d00e4f8f76821817771933ccce
   LoRa.write(gasPoint[0]);
   LoRa.write(lowByte(gas[1]));
   LoRa.write(highByte(gas[1]));
