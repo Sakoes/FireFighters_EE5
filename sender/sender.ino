@@ -32,6 +32,7 @@ NexText gas1ValueText = NexText(0, 7, "gas1value");
 NexText gas2ValueText = NexText(0, 8, "gas2value");
 NexText gas3ValueText = NexText(0, 9, "gas3value");
 NexButton sendButton = NexButton(0, 10, "send");
+NexButton testButton = NexButton(0, 13, "b0");
 
 
 NexPage page1 = NexPage(1, 0, "page1");
@@ -74,6 +75,7 @@ NexTouch *nex_listen_list[] =
   &gas2ValueText,
   &gas3ValueText,
   &sendButton,
+  &testButton,
   &page1,
   &okButton,
   &cancelButton,
@@ -141,6 +143,8 @@ void gas3TextPopCallback(void *ptr) {
 }
 
 void sendButtonPopCallback(void *ptr) {
+  Serial.print(F("g0.txt=\"Sent executed\""));
+  serialEnd();
   sendData();
 }
 
@@ -263,17 +267,19 @@ void updateValue() {
 }
 
 void updateHome() {
-  if (gasPoint[currentGas-1] == SET) {
-    int t1 = gas[currentGas-1] / 10;
-    int t2 = gas[currentGas-1] - (gas[currentGas-1] / 10) * 10;
-    sprintf(val, "gas%ivalue.txt=\"%i,%i\"", currentGas, t1, t2);
-    Serial.print(val);
-    serialEnd();
-  }
-  else {
-    sprintf(val, "gas%ivalue.txt=\"%i\"", currentGas, gas[currentGas-1]);
-    Serial.print(val);
-    serialEnd();
+  for(int i = 0; i < 3; i++){
+    if (gasPoint[i] == SET) {
+      int t1 = gas[i] / 10;
+      int t2 = gas[i] - (gas[i] / 10) * 10;
+      sprintf(val, "gas%ivalue.txt=\"%i,%i\"", i+1, t1, t2);
+      Serial.print(val);
+      serialEnd();
+    }
+    else {
+      sprintf(val, "gas%ivalue.txt=\"%i\"", i+1, gas[i]);
+      Serial.print(val);
+      serialEnd();
+    }
   }
   currentGas = 0;
 }
@@ -286,14 +292,22 @@ void throwDecimalSetError() {
 }
 
 void sendData() {
+  Serial.print(F("g0.txt=\"Sent executed and finished\""));
+  serialEnd();
   LoRa.beginPacket();
   LoRa.write(destination);
-  for(int i = 0; i < 3; i++){
-    LoRa.write(lowByte(gas[i]));
-    LoRa.write(highByte(gas[i]));
-    LoRa.write(gasPoint[i]);
-  }
+  LoRa.write(lowByte(gas[0]));
+  LoRa.write(highByte(gas[0]));
+  LoRa.write(gasPoint[0]);
+  LoRa.write(lowByte(gas[1]));
+  LoRa.write(highByte(gas[1]));
+  LoRa.write(gasPoint[1]);
+  LoRa.write(lowByte(gas[2]));
+  LoRa.write(highByte(gas[2]));
+  LoRa.write(gasPoint[2]);
   LoRa.endPacket();
+  Serial.print(F("g0.txt=\"Sent executed and finished\""));
+  serialEnd();
 }
 
 
@@ -328,7 +342,8 @@ void setup() {
   gas1ValueText.attachPop(gas1TextPopCallback, &gas1ValueText);
   gas2ValueText.attachPop(gas2TextPopCallback, &gas2ValueText);
   gas3ValueText.attachPop(gas3TextPopCallback, &gas3ValueText);
-  sendButton.attachPop(sendButtonPopCallback, &sendButton);
+  sendButton.attachPush(sendButtonPopCallback, &sendButton);
+  testButton.attachPush(sendButtonPopCallback, &testButton);
 
 
   okButton.attachPop(okButtonPopCallback, &okButton);
