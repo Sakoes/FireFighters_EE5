@@ -17,9 +17,8 @@ const int csPin = 10;          // LoRa radio chip select
 const int resetPin = 9;       // LoRa radio reset
 const int irqPin = 2;         // change for your board; must be a hardware interrupt pin
 
-byte msgCount = 0;            // count of outgoing messages
 byte localAddress = 0xBB;     // address of this device
-byte destination = 0xFF;      // destination to send to
+byte destination = 0xBB;      // destination to send to
 
 
 
@@ -32,7 +31,6 @@ NexText gas1ValueText = NexText(0, 7, "gas1value");
 NexText gas2ValueText = NexText(0, 8, "gas2value");
 NexText gas3ValueText = NexText(0, 9, "gas3value");
 NexButton sendButton = NexButton(0, 10, "send");
-NexButton testButton = NexButton(0, 13, "b0");
 
 
 NexPage page1 = NexPage(1, 0, "page1");
@@ -75,7 +73,6 @@ NexTouch *nex_listen_list[] =
   &gas2ValueText,
   &gas3ValueText,
   &sendButton,
-  &testButton,
   &page1,
   &okButton,
   &cancelButton,
@@ -292,16 +289,12 @@ void throwDecimalSetError() {
 }
 
 void sendData() {
-  Serial.print(F("g0.txt=\"Sent executed and finished\""));
+  Serial.print(F("g0.txt=\"Sending executed and finished\""));
   serialEnd();
   LoRa.beginPacket();
   LoRa.write(destination);
   LoRa.write(lowByte(gas[0]));
-<<<<<<< HEAD
   LoRa.write(highByte(gas[0]));
-=======
-  LoRa.write(highByte(gas[0]);
->>>>>>> 5bc7a97c330584d00e4f8f76821817771933ccce
   LoRa.write(gasPoint[0]);
   LoRa.write(lowByte(gas[1]));
   LoRa.write(highByte(gas[1]));
@@ -310,8 +303,6 @@ void sendData() {
   LoRa.write(highByte(gas[2]));
   LoRa.write(gasPoint[2]);
   LoRa.endPacket();
-  Serial.print(F("g0.txt=\"Sent executed and finished\""));
-  serialEnd();
 }
 
 
