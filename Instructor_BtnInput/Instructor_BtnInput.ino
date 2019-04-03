@@ -42,8 +42,7 @@ void setup() {
 
 void loop() {
   nexLoop(nex_listen_list);
-
-
+  readBtnInputs();
 }
 
 void readBtnInputs(){
