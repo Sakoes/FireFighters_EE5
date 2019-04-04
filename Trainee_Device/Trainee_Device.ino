@@ -42,7 +42,6 @@ void serialEnd() {
 
 void sendData(){
   if(millis() > rssiMillis + 1000){
-      serialEnd()
       LoRa.beginPacket();
       LoRa.write(destination);
       LoRa.endPacket();
