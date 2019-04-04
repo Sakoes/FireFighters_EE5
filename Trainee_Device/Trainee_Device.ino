@@ -150,27 +150,10 @@ void loop() {
 
 
 void checkGasses(){
-  //Explosives check
-  if(gas[0] >= gas0A2){
+  if(gas[0] >= gas0A2 || gas[1] >= gas1A2 || gas[2] >= gas2A2){
     alarmFlag2 = true;
   }
-  else if(gas[0] >= gas0A1){
-    alarmFlag1 = true;
-  }
-
-  //O2 check
-  if(gas[1] >= gas1A2){
-    alarmFlag2 = true;
-  }
-  else if(gas[1] <= gas1A1){
-    alarmFlag1 = true;
-  }
-
-  //CO check
-  if(gas[2] >= gas2A2){
-    alarmFlag2 = true;
-  }
-  else if(gas[2] >= gas2A1){
+  else if(gas[0] >= gas0A1 || gas[1] <= gas1A1 || gas[2] >= gas2A1){
     alarmFlag1 = true;
   }
 }
