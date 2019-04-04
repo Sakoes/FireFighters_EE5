@@ -338,7 +338,6 @@ void setup() {
   gas2ValueText.attachPop(gas2TextPopCallback, &gas2ValueText);
   gas3ValueText.attachPop(gas3TextPopCallback, &gas3ValueText);
   sendButton.attachPush(sendButtonPopCallback, &sendButton);
-  testButton.attachPush(sendButtonPopCallback, &testButton);
 
 
   okButton.attachPop(okButtonPopCallback, &okButton);
