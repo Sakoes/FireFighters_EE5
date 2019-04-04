@@ -19,7 +19,8 @@ decimal gasPoint[3];
 char val[50] = {0};
 
 byte localAddress = 0xBB;     // address of this device
-byte destination = 0xBB;
+byte destination = 0xBC;
+unsigned long rssiMillis;
 
 unsigned long startMillis;
 unsigned long currentMillis;
@@ -39,16 +40,27 @@ void serialEnd() {
   Serial.write(0xff);
 }
 
-
+void sendData(){
+  if(millis() > rssiMillis + 1000){
+      serialEnd()
+      LoRa.beginPacket();
+      LoRa.write(destination);
+      LoRa.endPacket();
+      rssiMillis = 0;
+      rssiMillis = millis();
+  }
+}
 
 void setup() {
   Serial.begin(9600);
   initializePins();
   startMillis=millis();
+  rssiMillis = millis();
+
   while (!Serial);
   //Serial.println("LoRa Receiver");
-LoRa.setPins(10, 9, 2);
-//LoRa.setSPIFrequency(8E6);
+  LoRa.setPins(10, 9, 2);
+  //LoRa.setSPIFrequency(8E6);
   if (!LoRa.begin(868E6)) {
     Serial.println("Starting LoRa failed!");
     while (1);
@@ -107,7 +119,8 @@ void loop() {
     //Serial.println(LoRa.packetRssi());
     //debugging();
   }
-toggleSwtich();
+
+  toggleSwtich();
   if(ackflag==false){gasConcentration(0,gas[0]); // gasConcentration(gasType,gasConcentration)
                       if(alarmFlag1==true) {priorityCheck=true;}
                      if(alarmFlag2==false){gasConcentration(1,gas[1]);
