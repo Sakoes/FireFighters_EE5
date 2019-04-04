@@ -17,7 +17,7 @@ const int csPin = 10;         // LoRa radio chip select
 const int resetPin = 9;       // LoRa radio reset
 const int irqPin = 2;         // change for your board; must be a hardware interrupt pin
 
-byte localAddress = 0xBB;     // address of this device
+byte localAddress = 0xBC;     // address of this device
 byte destination = 0xBB;      // destination to send to
 
 
@@ -361,6 +361,22 @@ void loop() {
 
   nexLoop(nex_listen_list);
   readBtnInputs();
+
+  int packetSize = LoRa.parsePacket();
+  if (packetSize) {
+    // received a packet
+
+    // read packet
+    while (LoRa.available()) {
+      if (LoRa.read() == localAddress) {
+        sprintf(val, "signal.val=%i", LoRa.packetRssi());
+        Serial.print(val);
+        serialEnd();
+        //LoRa.endPacket();
+      }
+      //Serial.print((char)LoRa.read());
+    }
+  }
   // put your main code here, to run repeatedly:
 
 }
