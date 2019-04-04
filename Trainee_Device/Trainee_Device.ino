@@ -118,6 +118,7 @@ void loop() {
     serialEnd();
     //Serial.println(LoRa.packetRssi());
     //debugging();
+    sendData();
   }
 
   toggleSwtich();
