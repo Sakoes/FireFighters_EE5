@@ -42,12 +42,13 @@ void serialEnd() {
 
 void sendData(){
   if(millis() > rssiMillis + 1000){
-      serialEnd()
+      serialEnd();
       LoRa.beginPacket();
       LoRa.write(destination);
       LoRa.endPacket();
       rssiMillis = 0;
       rssiMillis = millis();
+      //Serial.print("gas1.bco=0");
   }
 }
 
@@ -133,6 +134,8 @@ void loop() {
                      alarm();
   }
   else if (ackflag==true){stopAlarm();}
+
+  sendData();
 }
 
 void gasConcentration(int gasType,int gasCon){   //info about gasType and gas concentration
@@ -167,17 +170,18 @@ void setAlarm( int gasCon, int A1, int A2){  //choose between alarm 1 and alarm 
 }
 
 void setAlarmO2( int gasCon, int A1, int A2){  //choose between alarm 1 and alarm 2 and set alarm flag
-   if(gasCon<=A1){
-      alarmFlag2=false;
-      alarmFlag1=true;}
-    else if (gasCon>=A2){
-        alarmFlag2=true;
-        alarmFlag1=false;
-        }
-    else {
-        alarmFlag2=false;
-        alarmFlag1=false;
-      }
+  if(gasCon<=A1){
+    alarmFlag2=false;
+    alarmFlag1=true;
+  }
+  else if (gasCon>=A2){
+    alarmFlag2=true;
+    alarmFlag1=false;
+  }
+  else {
+    alarmFlag2=false;
+    alarmFlag1=false;
+  }
 }
 
 void alarm(){

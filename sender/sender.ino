@@ -13,7 +13,7 @@ enum decimal {
 };
 
 
-const int csPin = 10;         // LoRa radio chip select
+const int csPin = 10;          // LoRa radio chip select
 const int resetPin = 9;       // LoRa radio reset
 const int irqPin = 2;         // change for your board; must be a hardware interrupt pin
 
@@ -48,8 +48,6 @@ NexButton sixButton = NexButton(1, 7, "b6");
 NexButton sevenButton = NexButton(1, 8, "b7");
 NexButton eightButton = NexButton(1, 9, "b8");
 NexButton nineButton = NexButton(1, 10, "b9");
-
-
 
 
 char val[50] = {0};
@@ -145,7 +143,6 @@ void sendButtonPopCallback(void *ptr) {
   sendData();
 }
 
-
 void okButtonPopCallback(void *ptr) {
   for (int i = 0; i < 3; i++) {
     gasPrev[i] = gas[i];
@@ -184,7 +181,6 @@ void backButtonPushCallback(void *ptr) {
   updateValue();
 }
 
-
 void numberPushed(int x) {
   if (gasPoint[currentGas - 1] == SET) {
     throwDecimalSetError();
@@ -198,7 +194,6 @@ void numberPushed(int x) {
   }
   updateValue();
 }
-
 
 void zeroButtonPushCallback(void *ptr) {
   numberPushed(0);
@@ -228,11 +223,9 @@ void sixButtonPushCallback(void *ptr) {
   numberPushed(6);
 }
 
-
 void sevenButtonPushCallback(void *ptr) {
   numberPushed(7);
 }
-
 
 void eightButtonPushCallback(void *ptr) {
   numberPushed(8);
@@ -280,8 +273,6 @@ void updateHome() {
   }
   currentGas = 0;
 }
-
-
 
 void throwDecimalSetError() {
   Serial.print(F("errorMessage.txt=\"Decimal is already set.\""));
