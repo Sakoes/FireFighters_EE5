@@ -13,7 +13,7 @@ enum decimal {
 };
 
 
-const int csPin = 10;          // LoRa radio chip select
+const int csPin = 10;         // LoRa radio chip select
 const int resetPin = 9;       // LoRa radio reset
 const int irqPin = 2;         // change for your board; must be a hardware interrupt pin
 
