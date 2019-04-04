@@ -42,7 +42,10 @@ void serialEnd() {
 
 void sendData(){
   if(millis() > rssiMillis + 1000){
+<<<<<<< HEAD
       serialEnd();
+=======
+>>>>>>> 2050542b78dfcbeacc30cd82ba5f1f02fd62de6d
       LoRa.beginPacket();
       LoRa.write(destination);
       LoRa.endPacket();
@@ -119,6 +122,7 @@ void loop() {
     serialEnd();
     //Serial.println(LoRa.packetRssi());
     //debugging();
+    sendData();
   }
 
   toggleSwtich();

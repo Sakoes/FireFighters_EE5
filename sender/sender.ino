@@ -17,7 +17,7 @@ const int csPin = 10;          // LoRa radio chip select
 const int resetPin = 9;       // LoRa radio reset
 const int irqPin = 2;         // change for your board; must be a hardware interrupt pin
 
-byte localAddress = 0xBB;     // address of this device
+byte localAddress = 0xBC;     // address of this device
 byte destination = 0xBB;      // destination to send to
 
 
@@ -27,10 +27,10 @@ NexPage page0 = NexPage(0, 0, "page0");
 NexText gas1Text = NexText(0, 1, "gas1");
 NexText gas2Text = NexText(0, 2, "gas2");
 NexText gas3Text = NexText(0, 3, "gas3");
-NexText gas1ValueText = NexText(0, 7, "gas1value");
-NexText gas2ValueText = NexText(0, 8, "gas2value");
-NexText gas3ValueText = NexText(0, 9, "gas3value");
-NexButton sendButton = NexButton(0, 10, "send");
+NexText gas1ValueText = NexText(0, 6, "gas1value");
+NexText gas2ValueText = NexText(0, 7, "gas2value");
+NexText gas3ValueText = NexText(0, 8, "gas3value");
+NexButton sendButton = NexButton(0, 9, "send");
 
 
 NexPage page1 = NexPage(1, 0, "page1");
@@ -329,7 +329,6 @@ void setup() {
   gas2ValueText.attachPop(gas2TextPopCallback, &gas2ValueText);
   gas3ValueText.attachPop(gas3TextPopCallback, &gas3ValueText);
   sendButton.attachPush(sendButtonPopCallback, &sendButton);
-  testButton.attachPush(sendButtonPopCallback, &testButton);
 
 
   okButton.attachPop(okButtonPopCallback, &okButton);
@@ -352,6 +351,22 @@ void loop() {
 
   nexLoop(nex_listen_list);
   readBtnInputs();
+
+  int packetSize = LoRa.parsePacket();
+  if (packetSize) {
+    // received a packet
+
+    // read packet
+    while (LoRa.available()) {
+      if (LoRa.read() == localAddress) {
+        sprintf(val, "signal.val=%i", LoRa.packetRssi());
+        Serial.print(val);
+        serialEnd();
+        //LoRa.endPacket();
+      }
+      //Serial.print((char)LoRa.read());
+    }
+  }
   // put your main code here, to run repeatedly:
 
 }
