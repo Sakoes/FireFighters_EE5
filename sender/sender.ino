@@ -27,10 +27,10 @@ NexPage page0 = NexPage(0, 0, "page0");
 NexText gas1Text = NexText(0, 1, "gas1");
 NexText gas2Text = NexText(0, 2, "gas2");
 NexText gas3Text = NexText(0, 3, "gas3");
-NexText gas1ValueText = NexText(0, 7, "gas1value");
-NexText gas2ValueText = NexText(0, 8, "gas2value");
-NexText gas3ValueText = NexText(0, 9, "gas3value");
-NexButton sendButton = NexButton(0, 10, "send");
+NexText gas1ValueText = NexText(0, 6, "gas1value");
+NexText gas2ValueText = NexText(0, 7, "gas2value");
+NexText gas3ValueText = NexText(0, 8, "gas3value");
+NexButton sendButton = NexButton(0, 9, "send");
 
 
 NexPage page1 = NexPage(1, 0, "page1");
