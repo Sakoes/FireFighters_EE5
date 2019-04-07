@@ -34,6 +34,8 @@ const int gas1A2 = 23;
 const int gas2A1 = 20;
 const int gas2A2 = 100;
 
+const int tresHolds[6] = {10,20,19,23,20,100};
+
 
 boolean  alarmFlag1 =   false; //buzzer on when true
 boolean  alarmFlag2 =   false;
@@ -101,39 +103,13 @@ void setup() {
   nexInit();
 }
 
-
+int i =0;
 void loop() {
-  // try to parse packet
-  int packetSize = LoRa.parsePacket();
-  if (packetSize) {
-    // received a packet
-
-    // read packet
-    while (LoRa.available()) {
-      if (LoRa.read() == localAddress) {
-        gas[0] = word(LoRa.read(), LoRa.read());
-        gasPoint[0] = LoRa.read();
-        gas[1] = word(LoRa.read(), LoRa.read());
-        gasPoint[1] = LoRa.read();
-        gas[2] = word(LoRa.read(), LoRa.read());
-        gasPoint[2] = LoRa.read();
-        //counter = LoRa.read();
-        printData();
-        //LoRa.endPacket();
-        // clear ackflag
-        checkGasses();
-      }
-      //Serial.print((char)LoRa.read());
-    }
-
-    // print RSSI of packet
-    sprintf(val, "lora.txt=\"%i\"", LoRa.packetRssi());
-    Serial.print(val);
-    serialEnd();
-    //Serial.println(LoRa.packetRssi());
-    //debugging();
+  //loraReceive();
+  if(i == 0){
+    checkGasses();
+    i++;
   }
-
   //Button pressed: turn off alarms
   if(digitalRead(ACKBUT) == HIGH){
     alarmFlag1 = false;
@@ -147,32 +123,80 @@ void loop() {
   sendData();
 }
 
+void loraReceive(){
+  // try to parse packet
+  if (LoRa.parsePacket()) {
+    while (LoRa.available()) {
+      if (LoRa.read() == localAddress) {
+        gas[0] = word(LoRa.read(), LoRa.read());
+        gasPoint[0] = LoRa.read();
+        gas[1] = word(LoRa.read(), LoRa.read());
+        gasPoint[1] = LoRa.read();
+        gas[2] = word(LoRa.read(), LoRa.read());
+        gasPoint[2] = LoRa.read();
 
+        printData();
+
+        //Clear ackflag
+        checkGasses();
+      }
+    }
+
+    // print RSSI of packet
+    sprintf(val, "lora.txt=\"%i\"", LoRa.packetRssi());
+    Serial.print(val);
+    serialEnd();
+  }
+}
 
 void checkGasses(){
-  //Explosives check
-  if(gas[0] >= gas0A2){
-    alarmFlag2 = true;
-  }
-  else if(gas[0] >= gas0A1){
-    alarmFlag1 = true;
-  }
+  for(int i = 1; i < 4; i++){
+    switch (i) {
+      case 2: //O2
+        if(gas[i] >= tresHolds[i]){
+          alarmFlag2 = true;
+          setAlarmBackground(i, 63488);
+        }
+        else if(gas[i] <= tresHolds[i]){
+          alarmFlag1 = true;
+          setAlarmBackground(i, 63488);
+        }
+        else{
+          setAlarmBackground(i, 63488);
+        }
+        break;
 
-  //O2 check
-  if(gas[1] >= gas1A2){
-    alarmFlag2 = true;
+      default: //All other gasses
+        if(gas[i] >= tresHolds[i+1]){
+          alarmFlag2 = true;
+          setAlarmBackground(i, 63488);
+        }
+        else if(gas[i] >= tresHolds[i]){
+          alarmFlag1 = true;
+          setAlarmBackground(i, 64512);
+        }
+        else{
+          setAlarmBackground(i, 63488);
+        }
+        break;
+    }
   }
-  else if(gas[1] <= gas1A1){
-    alarmFlag1 = true;
-  }
+}
 
-  //CO check
-  if(gas[2] >= gas2A2){
-    alarmFlag2 = true;
-  }
-  else if(gas[2] >= gas2A1){
-    alarmFlag1 = true;
-  }
+void setAlarmBackground(int gas, unsigned int color){
+  char val[30];
+  sprintf(val, "gas%i.bco=%u", gas, color);
+  Serial.print(val);
+  serialEnd();
+  sprintf(val, "gas%ivalue.bco=%u", gas, color);
+  Serial.print(val);
+  serialEnd();
+  sprintf(val, "unit%i.bco=%u", gas, color);
+  Serial.print(val);
+  serialEnd();
+  sprintf(val, "b%i.bco=%u", gas, color);
+  Serial.print(val);
+  serialEnd();
 }
 
 void alarm() {
