@@ -27,9 +27,11 @@ NexPage page0 = NexPage(0, 0, "page0");
 NexText gas1Text = NexText(0, 1, "gas1");
 NexText gas2Text = NexText(0, 2, "gas2");
 NexText gas3Text = NexText(0, 3, "gas3");
+NexText gas4Text = NexText(0, 15, "gas4");
 NexText gas1ValueText = NexText(0, 6, "gas1value");
 NexText gas2ValueText = NexText(0, 7, "gas2value");
 NexText gas3ValueText = NexText(0, 8, "gas3value");
+NexText gas4ValueText = NexText(0, 16, "gas4value");
 NexButton sendButton = NexButton(0, 9, "send");
 
 
@@ -55,9 +57,9 @@ char val[50] = {0};
 int currentGas = 0;
 
 //These are the values of the gasses. If floats are needed, they are reformatted in the UI to show a decimal point
-int gas[3];
-int gasPrev[3];
-decimal gasPoint[3];
+int gas[4];
+int gasPrev[4];
+decimal gasPoint[4];
 
 
 
@@ -67,9 +69,11 @@ NexTouch *nex_listen_list[] =
   &gas1Text,
   &gas2Text,
   &gas3Text,
+  &gas4Text,
   &gas1ValueText,
   &gas2ValueText,
   &gas3ValueText,
+  &gas4valueText,
   &sendButton,
   &page1,
   &okButton,
@@ -118,7 +122,7 @@ void readBtnInputs(){
 
 void gas1TextPopCallback(void *ptr) {
   currentGas = 1;
-  Serial.print(F("gasText.txt=\"Explosives\""));
+  Serial.print(F("gasText.txt=\"CH4\""));
   serialEnd();
   updateValue();
 }
@@ -133,6 +137,13 @@ void gas2TextPopCallback(void *ptr) {
 void gas3TextPopCallback(void *ptr) {
   currentGas = 3;
   Serial.print(F("gasText.txt=\"CO\""));
+  serialEnd();
+  updateValue();
+}
+
+void gas4TextPopCallback(void *ptr) {
+  currentGas = 4;
+  Serial.print(F("gasText.txt=\"IBUT\""));
   serialEnd();
   updateValue();
 }
@@ -284,15 +295,12 @@ void sendData() {
   serialEnd();
   LoRa.beginPacket();
   LoRa.write(destination);
-  LoRa.write(lowByte(gas[0]));
-  LoRa.write(highByte(gas[0]));
-  LoRa.write(gasPoint[0]);
-  LoRa.write(lowByte(gas[1]));
-  LoRa.write(highByte(gas[1]));
-  LoRa.write(gasPoint[1]);
-  LoRa.write(lowByte(gas[2]));
-  LoRa.write(highByte(gas[2]));
-  LoRa.write(gasPoint[2]);
+  int numberOfGasses = sizeof(gas)/sizeof(int);
+  for(int i = 0; i < numberOfGasses; i++){
+    LoRa.write(lowByte(gas[i]));
+    LoRa.write(highByte(gas[i]));
+    LoRa.write(gasPoint[i]);
+  }
   LoRa.endPacket();
 }
 
@@ -325,9 +333,11 @@ void setup() {
   gas1Text.attachPop(gas1TextPopCallback, &gas1Text);
   gas2Text.attachPop(gas2TextPopCallback, &gas2Text);
   gas3Text.attachPop(gas3TextPopCallback, &gas3Text);
+  gas4Text.attachPop(gas4TextPopCallback, &gas4Text);
   gas1ValueText.attachPop(gas1TextPopCallback, &gas1ValueText);
   gas2ValueText.attachPop(gas2TextPopCallback, &gas2ValueText);
   gas3ValueText.attachPop(gas3TextPopCallback, &gas3ValueText);
+  gas4ValueText.attachPop(gas4TextPopCallback, &gas4ValueText);
   sendButton.attachPush(sendButtonPopCallback, &sendButton);
 
 
