@@ -268,7 +268,7 @@ void updateValue() {
 }
 
 void updateHome() {
-  for(int i = 0; i < 3; i++){
+  for(int i = 0; i < 4; i++){
     if (gasPoint[i] == SET) {
       int t1 = gas[i] / 10;
       int t2 = gas[i] - (gas[i] / 10) * 10;
