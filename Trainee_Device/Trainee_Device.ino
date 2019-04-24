@@ -13,7 +13,7 @@ enum decimal {
   SET
 };
 
-int gas[3] = {0, 21, 0}; //CH4 O2 CO
+int gas[4] = {0, 21, 0, 0}; //CH4 O2 CO IBUT
 decimal gasPoint[3];
 
 char val[50] = {0};
@@ -128,12 +128,10 @@ void loraReceive(){
   if (LoRa.parsePacket()) {
     while (LoRa.available()) {
       if (LoRa.read() == localAddress) {
-        gas[0] = word(LoRa.read(), LoRa.read());
-        gasPoint[0] = LoRa.read();
-        gas[1] = word(LoRa.read(), LoRa.read());
-        gasPoint[1] = LoRa.read();
-        gas[2] = word(LoRa.read(), LoRa.read());
-        gasPoint[2] = LoRa.read();
+        for(int i = 0; i < 4; i++){
+          gas[i] = word(LoRa.read(), LoRa.read());
+          gasPoint[i] = LoRa.read();
+        }
 
         printData();
 
