@@ -5,6 +5,7 @@
 String btnNames[5] = {"down.val=", "right.val=", "ok.val=", "left.val=", "up.val="};
 bool inputStates[5] = {0};
 
+int signal_strength[5] = {0,0,0,0,0};
 
 enum decimal {
   NO,
@@ -367,21 +368,30 @@ void loop() {
     // read packet
     while (LoRa.available()) {
       if (LoRa.read() == localAddress) {
-        int strength = LoRa.packetRssi();
+        for(int i = 0; i < 4; i++){
+          signal_strength[i] = signal_strength[i+1];
+        }
+        signal_strength[4] = LoRa.packetRssi();
+        int average = 0;
+        for(int i = 0; i < 5; i++){
+          average += signal_strength[i];
+        }
+        average /= 5;
+        int strength = average;
         sprintf(val, "signal.val=%i", strength);
         Serial.print(val);
         serialEnd();
-        if(strength > -20){
+        if(strength > -40){
           sprintf(val, "p0.pic=%i", 6);
           Serial.print(val);
           serialEnd();
         }
-        else if(strength > -40){
+        else if(strength > -70){
           sprintf(val, "p0.pic=%i", 5);
           Serial.print(val);
           serialEnd();
         }
-        else if(strength > -60){
+        else if(strength > -100){
           sprintf(val, "p0.pic=%i", 4);
           Serial.print(val);
           serialEnd();
