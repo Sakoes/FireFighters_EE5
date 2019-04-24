@@ -103,13 +103,10 @@ void setup() {
   nexInit();
 }
 
-int i =0;
+
 void loop() {
-  //loraReceive();
-  if(i == 0){
-    checkGasses();
-    i++;
-  }
+  loraReceive();
+
   //Button pressed: turn off alarms
   if(digitalRead(ACKBUT) == HIGH){
     alarmFlag1 = false;
