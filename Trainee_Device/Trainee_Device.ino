@@ -14,7 +14,7 @@ enum decimal {
 };
 
 int gas[4] = {0, 21, 0, 0}; //CH4 O2 CO IBUT
-decimal gasPoint[3];
+decimal gasPoint[4];
 
 char val[50] = {0};
 
@@ -33,8 +33,10 @@ const int gas1A1 = 19;
 const int gas1A2 = 23;
 const int gas2A1 = 20;
 const int gas2A2 = 100;
+const int gas3A1 = 100;
+const int gas3A2 = 200;
 
-const int tresHolds[6] = {10,20,19,23,20,100};
+const int tresHolds[6] = {10,20,19,23,20,100,100,200};
 
 
 boolean  alarmFlag1 =   false; //buzzer on when true
@@ -61,7 +63,7 @@ void sendData() {
 
 void printData() {
   serialEnd();
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 4; i++) {
     if (gasPoint[i] == SET) {
       int t1 = gas[i] / 10;
       int t2 = gas[i] - (gas[i] / 10) * 10;
@@ -145,7 +147,7 @@ void loraReceive(){
 }
 
 void checkGasses(){
-  for(int i = 1; i < 4; i++){
+  for(int i = 1; i < 5; i++){
     switch (i) {
       case 2: //O2
         if(gas[i] >= tresHolds[i]){
