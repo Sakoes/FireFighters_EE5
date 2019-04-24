@@ -295,8 +295,7 @@ void sendData() {
   serialEnd();
   LoRa.beginPacket();
   LoRa.write(destination);
-  int numberOfGasses = sizeof(gas)/sizeof(int);
-  for(int i = 0; i < numberOfGasses; i++){
+  for(int i = 0; i < 4; i++){
     LoRa.write(lowByte(gas[i]));
     LoRa.write(highByte(gas[i]));
     LoRa.write(gasPoint[i]);
@@ -369,9 +368,30 @@ void loop() {
     // read packet
     while (LoRa.available()) {
       if (LoRa.read() == localAddress) {
-        sprintf(val, "signal.val=%i", LoRa.packetRssi());
+        int strength = LoRa.packetRssi();
+        sprintf(val, "signal.val=%i", strength);
         Serial.print(val);
         serialEnd();
+        if(strength > -20){
+          sprintf(val, "p0.pic=%i", 6);
+          Serial.print(val);
+          serialEnd();
+        }
+        else if(strength > -40){
+          sprintf(val, "p0.pic=%i", 5);
+          Serial.print(val);
+          serialEnd();
+        }
+        else if(strength > -60){
+          sprintf(val, "p0.pic=%i", 4);
+          Serial.print(val);
+          serialEnd();
+        }
+        else{
+          sprintf(val, "p0.pic=%i", 3);
+          Serial.print(val);
+          serialEnd();
+        }
         //LoRa.endPacket();
       }
       //Serial.print((char)LoRa.read());
