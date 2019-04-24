@@ -359,7 +359,6 @@ void setup() {
 void loop() {
 
   nexLoop(nex_listen_list);
-  readBtnInputs();
 
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
