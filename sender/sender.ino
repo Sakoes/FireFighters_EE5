@@ -73,7 +73,7 @@ NexTouch *nex_listen_list[] =
   &gas1ValueText,
   &gas2ValueText,
   &gas3ValueText,
-  &gas4valueText,
+  &gas4ValueText,
   &sendButton,
   &page1,
   &okButton,
