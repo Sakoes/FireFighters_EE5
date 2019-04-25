@@ -39,6 +39,7 @@ const int gas3A2 = 200;
 const int tresHolds[8] = {10,20,19,23,20,100,100,200};
 const unsigned int alarmColor1 = 63488;
 const unsigned int alarmColor2 = 64512;
+const unsigned int neutralColor = 65535;
 
 boolean  alarmFlag1 =   false; //buzzer on when true
 boolean  alarmFlag2 =   false;
@@ -160,7 +161,7 @@ void checkGasses(){
           setAlarmBackground(i+1, alarmColor1);
         }
         else{
-          setAlarmBackground(i+1, alarmColor1);
+          setAlarmBackground(i+1, neutralColor);
         }
         break;
 
@@ -174,7 +175,7 @@ void checkGasses(){
           setAlarmBackground(i+1, alarmColor2);
         }
         else{
-          setAlarmBackground(i+1, alarmColor1);
+          setAlarmBackground(i+1, neutralColor);
         }
         break;
     }
@@ -191,9 +192,9 @@ void setAlarmBackground(int gas, unsigned int color){
   sprintf(val, "unit%i.bco=%u", gas, color);
   Serial.print(val);
   serialEnd();
-  sprintf(val, "b%i.bco=%u", gas, color);
-  Serial.print(val);
-  serialEnd();
+  // sprintf(val, "b%i.bco=%u", gas, color);
+  // Serial.print(val);
+  // serialEnd();
 }
 
 void alarm() {
