@@ -37,7 +37,8 @@ const int gas3A1 = 100;
 const int gas3A2 = 200;
 
 const int tresHolds[6] = {10,20,19,23,20,100,100,200};
-
+const unsigned int alarmColor1 = 63488;
+const unsigned int alarmColor2 = 64512;
 
 boolean  alarmFlag1 =   false; //buzzer on when true
 boolean  alarmFlag2 =   false;
@@ -147,33 +148,33 @@ void loraReceive(){
 }
 
 void checkGasses(){
-  for(int i = 1; i < 5; i++){
+  for(int i = 0; i < 4; i++){
     switch (i) {
-      case 2: //O2
-        if(gas[i] >= tresHolds[i]){
+      case 1: //O2
+        if(gas[i] >= tresHolds[2*i+1]){
           alarmFlag2 = true;
-          setAlarmBackground(i, 63488);
+          setAlarmBackground(i+1, alarmColor1);
         }
-        else if(gas[i] <= tresHolds[i]){
+        else if(gas[i] <= tresHolds[2*i]){
           alarmFlag1 = true;
-          setAlarmBackground(i, 63488);
+          setAlarmBackground(i+1, alarmColor1);
         }
         else{
-          setAlarmBackground(i, 63488);
+          setAlarmBackground(i+1, alarmColor1);
         }
         break;
 
       default: //All other gasses
-        if(gas[i] >= tresHolds[i+1]){
+        if(gas[i] >= tresHolds[2*i+1]){
           alarmFlag2 = true;
-          setAlarmBackground(i, 63488);
+          setAlarmBackground(i+1, alarmColor1);
         }
-        else if(gas[i] >= tresHolds[i]){
+        else if(gas[i] >= tresHolds[2*i]){
           alarmFlag1 = true;
-          setAlarmBackground(i, 64512);
+          setAlarmBackground(i+1, alarmColor2);
         }
         else{
-          setAlarmBackground(i, 63488);
+          setAlarmBackground(i+1, alarmColor1);
         }
         break;
     }
@@ -181,7 +182,6 @@ void checkGasses(){
 }
 
 void setAlarmBackground(int gas, unsigned int color){
-  char val[30];
   sprintf(val, "gas%i.bco=%u", gas, color);
   Serial.print(val);
   serialEnd();
