@@ -381,17 +381,17 @@ void loop() {
         sprintf(val, "signal.val=%i", strength);
         Serial.print(val);
         serialEnd();
-        if(strength > -40){
+        if(strength > -70){
           sprintf(val, "p0.pic=%i", 6);
           Serial.print(val);
           serialEnd();
         }
-        else if(strength > -70){
+        else if(strength > -95){
           sprintf(val, "p0.pic=%i", 5);
           Serial.print(val);
           serialEnd();
         }
-        else if(strength > -100){
+        else if(strength > -115){
           sprintf(val, "p0.pic=%i", 4);
           Serial.print(val);
           serialEnd();
