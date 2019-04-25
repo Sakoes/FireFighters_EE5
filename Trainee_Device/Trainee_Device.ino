@@ -36,7 +36,7 @@ const int gas2A2 = 100;
 const int gas3A1 = 100;
 const int gas3A2 = 200;
 
-const int tresHolds[6] = {10,20,19,23,20,100,100,200};
+const int tresHolds[8] = {10,20,19,23,20,100,100,200};
 const unsigned int alarmColor1 = 63488;
 const unsigned int alarmColor2 = 64512;
 
