@@ -1,6 +1,7 @@
 #include <SPI.h>              // include libraries
 #include <LoRa.h>
 #include <Nextion.h>
+#include <EEPROM.h>
 
 
 int signal_strength[5] = {0,0,0,0,0};
@@ -10,6 +11,12 @@ enum decimal {
   CURRENT,
   SET
 };
+
+union {
+    float fval;
+    byte bval[4];
+} coordinates[2];
+
 
 
 const int csPin = 10;          // LoRa radio chip select
@@ -51,7 +58,7 @@ NexButton eightButton = NexButton(1, 9, "b8");
 NexButton nineButton = NexButton(1, 10, "b9");
 
 
-char val[50] = {0};
+char val[80] = {0};
 
 int currentGas = 0;
 
@@ -395,6 +402,29 @@ void loop() {
     // read packet
     while (LoRa.available()) {
       if (LoRa.read() == localAddress) {
+        //Read GPS coordinates
+        for(int c = 0; c < 2; c++){ //c = 0: longitude, 1: latitude
+          for(int i = 0; i < 4; i++){
+            coordinates[c].bval[i] = LoRa.read();
+          }
+        }
+
+        //Send values to display
+        char* num;
+        dtostrf(coordinates[0].fval, 12, 7, num);
+        strcpy_P(val, (const char*) F("longitude.txt=\""));
+        strcat(val, num);
+        strcat_P(val, (const char*) F("\""));
+        Serial.print(val);
+        serialEnd();
+        dtostrf(coordinates[1].fval, 12, 7, num);
+        strcpy_P(val, (const char*) F("latitude.txt=\""));
+        strcat(val, num);
+        strcat_P(val, (const char*) F("\""));
+        Serial.print(val);
+        serialEnd();
+
+        //Calculate signal strength
         for(int i = 0; i < 4; i++){
           signal_strength[i] = signal_strength[i+1];
         }
