@@ -13,6 +13,8 @@ enum decimal {
   SET
 };
 
+
+
 int gas[4] = {0, 21, 0, 0}; //CH4 O2 CO IBUT
 decimal gasPoint[4];
 
@@ -37,6 +39,10 @@ boolean  alarmFlag1 =   false; //buzzer on when true
 boolean  alarmFlag2 =   false;
 
 
+float latitude = 1.2345;
+float longitude = 5.4321;
+
+
 void serialEnd() {
   Serial.write(0xff);
   Serial.write(0xff);
@@ -45,8 +51,17 @@ void serialEnd() {
 
 void sendData() {
   if (millis() > rssiMillis + 1000) {
+    //These pointers will point to the first byte of both floats
+    byte *lon = (byte *)&longitude;
+    byte *lat = (byte *)&latitude;
     LoRa.beginPacket();
     LoRa.write(destination);
+    for(int i = 0; i < 4; i++){ //Write longitude
+      LoRa.write(*(lon+i));
+    }
+    for(int i = 0; i < 4; i++){ //Write latitude
+      LoRa.write(*(lat+i));
+    }
     LoRa.endPacket();
     rssiMillis = 0;
     rssiMillis = millis();
@@ -131,7 +146,7 @@ void loraReceive(){
         LoRa.write(destination);
         LoRa.write(0xFF);//Acknowledgement
         LoRa.endPacket();
-        
+
 
         printData();
 
