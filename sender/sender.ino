@@ -2,8 +2,6 @@
 #include <LoRa.h>
 #include <Nextion.h>
 
-String btnNames[5] = {"down.val=", "right.val=", "ok.val=", "left.val=", "up.val="};
-bool inputStates[5] = {0};
 
 int signal_strength[5] = {0,0,0,0,0};
 
@@ -102,23 +100,7 @@ void serialEnd() {
   Serial.write(0xff);
 }
 
-void readBtnInputs(){
-  char displayCom [64];
 
-  inputStates[0] = digitalRead(3);
-  inputStates[1] = digitalRead(4);
-  inputStates[2] = digitalRead(5);
-  inputStates[3] = digitalRead(A0);
-  inputStates[4] = digitalRead(A5);
-
-
-
-//  for(int i = 0; i < 5; i++){
-//    sprintf (displayCom, "%s%b", btnNames[i], inputStates[i]);
-//    Serial.print(displayCom);
-//    serialEnd();
-//  }
-}
 
 
 void gas1TextPopCallback(void *ptr) {
@@ -292,16 +274,46 @@ void throwDecimalSetError() {
 }
 
 void sendData() {
-  Serial.print(F("g0.txt=\"Sending executed and finished\""));
-  serialEnd();
-  LoRa.beginPacket();
-  LoRa.write(destination);
-  for(int i = 0; i < 4; i++){
-    LoRa.write(lowByte(gas[i]));
-    LoRa.write(highByte(gas[i]));
-    LoRa.write(gasPoint[i]);
+  //The while loop will keep resending until an acknowledgement has been received
+  //If no acknowledgement has been received after 10 attempts, stop the loop and notify the user
+  int attempt = 0;
+  bool ackReceived = false;
+
+  while(!ackReceived && attempt < 10) {
+    attempt++;
+    LoRa.beginPacket();
+    LoRa.write(destination);
+    for(int i = 0; i < 4; i++){
+      LoRa.write(lowByte(gas[i]));
+      LoRa.write(highByte(gas[i]));
+      LoRa.write(gasPoint[i]);
+    }
+    LoRa.endPacket();
+
+    //delay necessary? To give time for the acknowledgement
+    delay(50);
+
+    int packetSize = LoRa.parsePacket();
+    if (packetSize) {
+      // received a packet
+
+      // read packet
+      while (LoRa.available()) {
+        if (LoRa.read() == localAddress) {
+          if(LoRa.read() == 0xFF){
+            ackReceived = true;
+          }
+        }
+      }
+    }
   }
-  LoRa.endPacket();
+
+  //Was an acknowledgement received?
+  if(!ackReceived){
+    //Notify user that sending failed and that there might be connectivity issues
+  }
+
+
 }
 
 

@@ -26,15 +26,7 @@ unsigned long startMillis;
 unsigned long currentMillis;
 const unsigned long period = 500 ; //the period of blinking LEDs/buzzer
 
-//Gas alarm values as constants
-const int gas0A1 = 10;
-const int gas0A2 = 20;
-const int gas1A1 = 19;
-const int gas1A2 = 23;
-const int gas2A1 = 20;
-const int gas2A2 = 100;
-const int gas3A1 = 100;
-const int gas3A2 = 200;
+
 
 const int tresHolds[8] = {10,20,19,23,20,100,100,200};
 const unsigned int alarmColor1 = 63488;
@@ -133,6 +125,12 @@ void loraReceive(){
           gas[i] = word(LoRa.read(), LoRa.read());
           gasPoint[i] = LoRa.read();
         }
+
+        //Sending Acknowledgement
+        LoRa.beginPacket();
+        LoRa.write(destination);
+        LoRa.write(0xFF);//Acknowledgement
+        LoRa.endPacket();
 
         printData();
 
