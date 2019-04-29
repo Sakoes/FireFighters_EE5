@@ -142,6 +142,13 @@ void okButtonPopCallback(void *ptr) {
     gasPrev[i] = gas[i];
   }
   updateHome();
+
+  //Save the values in EEPROM
+  for(int i = 0; i < 4; i++){
+    EEPROM.write(3*i, lowByte(gas[i]));
+    EEPROM.write(3*i+1, highByte(gas[i]));
+    EEPROM.write(3*i+2, gasPoint[i]);
+  }
 }
 
 void cancelButtonPopCallback(void *ptr) {
@@ -367,6 +374,14 @@ void setup() {
   sevenButton.attachPush(sevenButtonPushCallback, &sevenButton);
   eightButton.attachPush(eightButtonPushCallback, &eightButton);
   nineButton.attachPush(nineButtonPushCallback, &nineButton);
+
+
+  //read gas values from EEPROM
+  for(int i = 0; i < 4; i++){
+    gas[i] = word(EEPROM.read(3*i), EEPROM.read(3*i+1));
+    gasPoint[i] = EEPROM.read(3*i+2);
+  }
+  updateHome();
 }
 
 void loop() {
