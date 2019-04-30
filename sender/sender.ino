@@ -304,18 +304,32 @@ void sendData() {
     }
     LoRa.endPacket();
 
-    //delay necessary? To give time for the acknowledgement
-    delay(10);
+    //check a few times whether data has been received, to give time to the receiver to send the package
+    for(int i = 0; i < 10; i++){
+      delay(5);
 
-    int packetSize = LoRa.parsePacket();
-    if (packetSize) {
-      // received a packet
+      int packetSize = LoRa.parsePacket();
+      if (packetSize) {
+        // received a packet
 
-      // read packet
-      while (LoRa.available()) {
-        if (LoRa.read() == localAddress) {
-          if(LoRa.read() == 0xFF){
-            ackReceived = true;
+        // read packet
+        while (LoRa.available()) {
+          if (LoRa.read() == localAddress) {
+            bool dataIntact = true;
+            for(int i = 0; i < 4; i++){
+              if(LoRa.read() != lowByte(gas[i])){
+                dataIntact = false;
+              }
+              if(LoRa.read() != highByte(gas[i])){
+                dataIntact = false;
+              }
+              if(LoRa.read() != gasPoint[i]){
+                dataIntact = false;
+              }
+            }
+            if(dataIntact == true){
+              ackReceived = true;
+            }
           }
         }
       }
@@ -324,7 +338,7 @@ void sendData() {
 
   //Was an acknowledgement received?
   if(!ackReceived){
-    Serial.print(F("message.txt=\"No acknowledgement received.\""));
+    Serial.print(F("message.txt=\"No acknowledgement received. Transmission might have failed.\""));
     serialEnd();
     //Notify user that sending failed and that there might be connectivity issues
   }
@@ -390,11 +404,11 @@ void setup() {
 
 
   //read gas values from EEPROM
-  for(int i = 0; i < 4; i++){
-    gas[i] = word(EEPROM.read(3*i), EEPROM.read(3*i+1));
-    gasPoint[i] = EEPROM.read(3*i+2);
-  }
-  updateHome();
+  //for(int i = 0; i < 4; i++){
+    //gas[i] = word(EEPROM.read(3*i), EEPROM.read(3*i+1));
+    //gasPoint[i] = EEPROM.read(3*i+2);
+  //}
+  //updateHome();
 }
 
 void loop() {
@@ -409,26 +423,26 @@ void loop() {
     while (LoRa.available()) {
       if (LoRa.read() == localAddress) {
         //Read GPS coordinates
-        for(int c = 0; c < 2; c++){ //c = 0: longitude, 1: latitude
-          for(int i = 0; i < 4; i++){
-            coordinates[c].bval[i] = LoRa.read();
-          }
-        }
-
-        //Send values to display
-        char* num;
-        dtostrf(coordinates[0].fval, 12, 7, num);
-        strcpy_P(val, (const char*) F("longitude.txt=\""));
-        strcat(val, num);
-        strcat_P(val, (const char*) F("\""));
-        Serial.print(val);
-        serialEnd();
-        dtostrf(coordinates[1].fval, 12, 7, num);
-        strcpy_P(val, (const char*) F("latitude.txt=\""));
-        strcat(val, num);
-        strcat_P(val, (const char*) F("\""));
-        Serial.print(val);
-        serialEnd();
+        // for(int c = 0; c < 2; c++){ //c = 0: longitude, 1: latitude
+        //   for(int i = 0; i < 4; i++){
+        //     coordinates[c].bval[i] = LoRa.read();
+        //   }
+        // }
+        //
+        // //Send values to display
+        // char* num;
+        // dtostrf(coordinates[0].fval, 12, 7, num);
+        // strcpy_P(val, (const char*) F("longitude.txt=\""));
+        // strcat(val, num);
+        // strcat_P(val, (const char*) F("\""));
+        // Serial.print(val);
+        // serialEnd();
+        // dtostrf(coordinates[1].fval, 12, 7, num);
+        // strcpy_P(val, (const char*) F("latitude.txt=\""));
+        // strcat(val, num);
+        // strcat_P(val, (const char*) F("\""));
+        // Serial.print(val);
+        // serialEnd();
 
         //Calculate signal strength
         for(int i = 0; i < 4; i++){

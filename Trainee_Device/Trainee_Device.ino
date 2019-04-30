@@ -39,8 +39,8 @@ boolean  alarmFlag1 =   false; //buzzer on when true
 boolean  alarmFlag2 =   false;
 
 
-float latitude;
-float longitude;
+//float latitude;
+//float longitude;
 
 
 void serialEnd() {
@@ -52,16 +52,16 @@ void serialEnd() {
 void sendData() {
   if (millis() > rssiMillis + 1000) {
     //These pointers will point to the first byte of both floats
-    byte *lon = (byte *)&longitude;
-    byte *lat = (byte *)&latitude;
+    //byte *lon = (byte *)&longitude;
+    //byte *lat = (byte *)&latitude;
     LoRa.beginPacket();
     LoRa.write(destination);
-    for(int i = 0; i < 4; i++){ //Write longitude
-      LoRa.write(*(lon+i));
-    }
-    for(int i = 0; i < 4; i++){ //Write latitude
-      LoRa.write(*(lat+i));
-    }
+    // for(int i = 0; i < 4; i++){ //Write longitude
+    //   LoRa.write(*(lon+i));
+    // }
+    // for(int i = 0; i < 4; i++){ //Write latitude
+    //   LoRa.write(*(lat+i));
+    // }
     LoRa.endPacket();
     rssiMillis = 0;
     rssiMillis = millis();
@@ -141,10 +141,19 @@ void loraReceive(){
           gasPoint[i] = LoRa.read();
         }
 
+
         //Sending Acknowledgement
+        //LoRa.beginPacket();
+        //LoRa.write(destination);
+        //LoRa.write(0xFF);//Acknowledgement
+        //LoRa.endPacket();
         LoRa.beginPacket();
         LoRa.write(destination);
-        LoRa.write(0xFF);//Acknowledgement
+        for(int i = 0; i < 4; i++){
+          LoRa.write(lowByte(gas[i]));
+          LoRa.write(highByte(gas[i]));
+          LoRa.write(gasPoint[i]);
+        }
         LoRa.endPacket();
 
 
