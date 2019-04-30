@@ -39,8 +39,8 @@ boolean  alarmFlag1 =   false; //buzzer on when true
 boolean  alarmFlag2 =   false;
 
 
-float latitude = 1.2345;
-float longitude = 5.4321;
+float latitude;
+float longitude;
 
 
 void serialEnd() {
