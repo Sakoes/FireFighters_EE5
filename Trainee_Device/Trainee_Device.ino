@@ -39,8 +39,17 @@ boolean  alarmFlag1 =   false; //buzzer on when true
 boolean  alarmFlag2 =   false;
 
 
-//float latitude;
-//float longitude;
+union  // saving Latitude
+{
+  float flat;
+  byte bytelat[4];
+} gps_lat;
+
+union  //saving Lon
+{
+  float flon;
+  byte bytelon[4];
+} gps_lon;
 
 
 void serialEnd() {
@@ -56,6 +65,12 @@ void sendData() {
     //byte *lat = (byte *)&latitude;
     LoRa.beginPacket();
     LoRa.write(destination);
+    // for (int i = 0; i < 4; i++) {
+    //   LoRa.write(gps_lat.bytelat[i]);
+    // }
+    // for (int i = 0; i < 4; i++) {
+    //   LoRa.write(gps_lon.bytelon[i]);
+    // }
     // for(int i = 0; i < 4; i++){ //Write longitude
     //   LoRa.write(*(lon+i));
     // }
@@ -92,6 +107,8 @@ void printData() {
 
 void setup() {
   Serial.begin(9600);
+  gps_lat.flat = 50.874845;
+  gps_lon.flon = 4.707942;
 
   pinMode(LED1,  OUTPUT);
   pinMode(LED2,  OUTPUT);

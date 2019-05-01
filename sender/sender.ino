@@ -12,10 +12,18 @@ enum decimal {
   SET
 };
 
-union {
-    float fval;
-    byte bval[4];
-} coordinates[2];
+
+union         //I can't find how to make an array of union maybe gas2[2]?
+{
+  float flat;
+  byte bytelat[4];
+} gps_lat;
+
+union
+{
+  float flon;
+  byte bytelon[4];
+} gps_lon;
 
 
 
@@ -152,9 +160,10 @@ void okButtonPopCallback(void *ptr) {
 
   //Save the values in EEPROM
   for(int i = 0; i < 4; i++){
-    EEPROM.write(3*i, lowByte(gas[i]));
-    EEPROM.write(3*i+1, highByte(gas[i]));
-    EEPROM.write(3*i+2, gasPoint[i]);
+    EEPROM.write(4*i, lowByte(gas[i]));
+    EEPROM.write(4*i+1, highByte(gas[i]));
+    EEPROM.write(4*i+2, lowByte(gasPoint[i]));
+    EEPROM.write(4*i+3, highByte(gasPoint[i]));
   }
 }
 
@@ -404,11 +413,11 @@ void setup() {
 
 
   //read gas values from EEPROM
-  //for(int i = 0; i < 4; i++){
-    //gas[i] = word(EEPROM.read(3*i), EEPROM.read(3*i+1));
-    //gasPoint[i] = EEPROM.read(3*i+2);
-  //}
-  //updateHome();
+  for(int i = 0; i < 4; i++){
+    gas[i] = word(EEPROM.read(4*i+1), EEPROM.read(4*i));
+    gasPoint[i] = word(EEPROM.read(4*i+3), EEPROM.read(4*i+2));
+  }
+  updateHome();
 }
 
 void loop() {
@@ -422,6 +431,12 @@ void loop() {
     // read packet
     while (LoRa.available()) {
       if (LoRa.read() == localAddress) {
+        // for (int i = 0; i < 4; i++) {
+        //   gps_lat.bytelat[i] = LoRa.read();
+        // }
+        // for (int i = 0; i < 4; i++) {
+        //   gps_lon.bytelon[i] = LoRa.read();
+        // }
         //Read GPS coordinates
         // for(int c = 0; c < 2; c++){ //c = 0: longitude, 1: latitude
         //   for(int i = 0; i < 4; i++){
@@ -429,15 +444,15 @@ void loop() {
         //   }
         // }
         //
-        // //Send values to display
+        //Send values to display
         // char* num;
-        // dtostrf(coordinates[0].fval, 12, 7, num);
+        // dtostrf(gps_lon.flon, 12, 7, num);
         // strcpy_P(val, (const char*) F("longitude.txt=\""));
         // strcat(val, num);
         // strcat_P(val, (const char*) F("\""));
         // Serial.print(val);
         // serialEnd();
-        // dtostrf(coordinates[1].fval, 12, 7, num);
+        // dtostrf(gps_lat.flat, 12, 7, num);
         // strcpy_P(val, (const char*) F("latitude.txt=\""));
         // strcat(val, num);
         // strcat_P(val, (const char*) F("\""));
