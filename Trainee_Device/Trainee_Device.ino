@@ -155,7 +155,7 @@ void loraReceive(){
       if (LoRa.read() == localAddress) {
         for(int i = 0; i < 4; i++){
           gas[i] = word(LoRa.read(), LoRa.read());
-          gasPoint[i] = LoRa.read();
+          gasPoint[i] = word(LoRa.read(), LoRa.read());
         }
 
 
@@ -169,7 +169,8 @@ void loraReceive(){
         for(int i = 0; i < 4; i++){
           LoRa.write(lowByte(gas[i]));
           LoRa.write(highByte(gas[i]));
-          LoRa.write(gasPoint[i]);
+          LoRa.write(lowByte(gasPoint[i]));
+          LoRa.write(highByte(gasPoint[i]));
         }
         LoRa.endPacket();
 
@@ -194,42 +195,48 @@ void checkGasses(){
       case 1: //O2
         if(gas[i] >= tresHolds[2*i+1]){
           alarmFlag2 = true;
-          setAlarmBackground(i+1, alarmColor1);
+          setAlarmBackground(i+1, 1);
         }
         else if(gas[i] <= tresHolds[2*i]){
           alarmFlag1 = true;
-          setAlarmBackground(i+1, alarmColor1);
+          setAlarmBackground(i+1, 1);
         }
         else{
-          setAlarmBackground(i+1, neutralColor);
+          setAlarmBackground(i+1, 0);
         }
         break;
 
       default: //All other gasses
         if(gas[i] >= tresHolds[2*i+1]){
           alarmFlag2 = true;
-          setAlarmBackground(i+1, alarmColor1);
+          setAlarmBackground(i+1, 1);
         }
         else if(gas[i] >= tresHolds[2*i]){
           alarmFlag1 = true;
-          setAlarmBackground(i+1, alarmColor2);
+          setAlarmBackground(i+1, 2);
         }
         else{
-          setAlarmBackground(i+1, neutralColor);
+          setAlarmBackground(i+1, 0);
         }
         break;
     }
   }
 }
 
-void setAlarmBackground(int gas, unsigned int color){
-  sprintf(val, "gas%i.bco=%u", gas, color);
+void setAlarmBackground(int gas, unsigned int color){ // color 0 = neutral, 1 = red, 2 = orange
+  // sprintf(val, "gas%i.bco=%u", gas, color);
+  // Serial.print(val);
+  // serialEnd();
+  // sprintf(val, "gas%ivalue.bco=%u", gas, color);
+  // Serial.print(val);
+  // serialEnd();
+  // sprintf(val, "unit%i.bco=%u", gas, color);
+  // Serial.print(val);
+  // serialEnd();
+  sprintf(val, "dataFlag.val=%i", 1);
   Serial.print(val);
   serialEnd();
-  sprintf(val, "gas%ivalue.bco=%u", gas, color);
-  Serial.print(val);
-  serialEnd();
-  sprintf(val, "unit%i.bco=%u", gas, color);
+  sprintf(val, "gas%iflag.val=%u", gas, color);
   Serial.print(val);
   serialEnd();
   // sprintf(val, "b%i.bco=%u", gas, color);

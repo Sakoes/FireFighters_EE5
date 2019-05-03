@@ -309,7 +309,8 @@ void sendData() {
     for(int i = 0; i < 4; i++){
       LoRa.write(lowByte(gas[i]));
       LoRa.write(highByte(gas[i]));
-      LoRa.write(gasPoint[i]);
+      LoRa.write(lowByte(gasPoint[i]));
+      LoRa.write(highByte(gasPoint[i]));
     }
     LoRa.endPacket();
 
@@ -332,7 +333,10 @@ void sendData() {
               if(LoRa.read() != highByte(gas[i])){
                 dataIntact = false;
               }
-              if(LoRa.read() != gasPoint[i]){
+              if(LoRa.read() != lowByte(gasPoint[i])){
+                dataIntact = false;
+              }
+              if(LoRa.read() != highByte(gasPoint[i])){
                 dataIntact = false;
               }
             }
