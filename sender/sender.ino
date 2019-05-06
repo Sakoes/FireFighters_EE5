@@ -25,8 +25,6 @@ union
   byte bytelon[4];
 } gps_lon;
 
-
-
 const int csPin = 10;          // LoRa radio chip select
 const int resetPin = 9;       // LoRa radio reset
 const int irqPin = 2;         // change for your board; must be a hardware interrupt pin
@@ -299,6 +297,64 @@ void throwDecimalSetError() {
   serialEnd();
 }
 
+void sendTresholds(){
+  int attempt = 0;
+  bool ackReceived = false;
+
+  while(!ackReceived && attempt < 10) {
+    attempt++;
+    LoRa.beginPacket();
+    LoRa.write(destination);
+    LoRa.write(0x00);
+    for(int i = 0; i < 4; i++){
+      LoRa.write(lowByte(tres[i]));
+      LoRa.write(highByte(tres[i]));
+      LoRa.write(lowByte(tresPoint[i]));
+      LoRa.write(highByte(tresPoint[i]));
+    }
+    LoRa.endPacket();
+
+    //check a few times whether data has been received, to give time to the receiver to send the package
+    for(int i = 0; i < 10; i++){
+      delay(5);
+
+      int packetSize = LoRa.parsePacket();
+      if (packetSize) {
+        // received a packet
+
+        // read packet
+        while (LoRa.available()) {
+          if (LoRa.read() == localAddress) {
+            bool dataIntact = true;
+            for(int i = 0; i < 4; i++){
+              if(LoRa.read() != lowByte(tres[i]) || LoRa.read() != highByte(tres[i]) || LoRa.read() != lowByte(tresPoint[i]) || LoRa.read() != highByte(tresPoint[i])){
+                dataIntact = false;
+              }
+            }
+            if(dataIntact == true){
+              ackReceived = true;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  //Was an acknowledgement received?
+  if(!ackReceived){
+    Serial.print(F("message.txt=\"No acknowledgement received. Transmission might have failed.\""));
+    serialEnd();
+    //Notify user that sending failed and that there might be connectivity issues
+  }
+  else{
+    Serial.print(F("message.txt=\"Data sent!\""));
+    serialEnd();
+  }
+
+
+  }
+}
+
 void sendData() {
   //The while loop will keep resending until an acknowledgement has been received
   //If no acknowledgement has been received after 10 attempts, stop the loop and notify the user
@@ -309,6 +365,7 @@ void sendData() {
     attempt++;
     LoRa.beginPacket();
     LoRa.write(destination);
+    LoRa.write(0xff);
     for(int i = 0; i < 4; i++){
       LoRa.write(lowByte(gas[i]));
       LoRa.write(highByte(gas[i]));

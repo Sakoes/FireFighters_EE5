@@ -29,8 +29,8 @@ unsigned long currentMillis;
 const unsigned long period = 500 ; //the period of blinking LEDs/buzzer
 
 
-
-const int tresHolds[8] = {10,20,19,23,20,100,100,200};
+int tresHolds[8] = {10,20,19,23,20,100,100,200};
+int tresPoint[] = {NO,NO,NO,NO,NO,NO,NO,NO};
 const unsigned int alarmColor1 = 63488;
 const unsigned int alarmColor2 = 64512;
 const unsigned int neutralColor = 65535;
@@ -148,11 +148,32 @@ void loop() {
   sendData();
 }
 
+void tresReceive(){
+  // try to parse packet
+  if (LoRa.parsePacket()) {
+    while (LoRa.available()) {
+      if (LoRa.read() == localAddress && LoRa.read() == 0x00) {
+        for(int i = 0; i < 4; i++){
+          gas[i] = word(LoRa.read(), LoRa.read());
+          gasPoint[i] = word(LoRa.read(), LoRa.read());
+        }
+
+        LoRa.beginPacket();
+        LoRa.write(destination);
+        for(int i = 0; i < 4; i++){
+          LoRa.write(lowByte(gas[i]));
+          LoRa.write(highByte(gas[i]));
+          LoRa.write(lowByte(gasPoint[i]));
+          LoRa.write(highByte(gasPoint[i]));
+        }
+        LoRa.endPacket();
+}
+
 void loraReceive(){
   // try to parse packet
   if (LoRa.parsePacket()) {
     while (LoRa.available()) {
-      if (LoRa.read() == localAddress) {
+      if (LoRa.read() == localAddress && LoRa.read() == 0xff) {
         for(int i = 0; i < 4; i++){
           gas[i] = word(LoRa.read(), LoRa.read());
           gasPoint[i] = word(LoRa.read(), LoRa.read());
@@ -224,24 +245,12 @@ void checkGasses(){
 }
 
 void setAlarmBackground(int gas, unsigned int color){ // color 0 = neutral, 1 = red, 2 = orange
-  // sprintf(val, "gas%i.bco=%u", gas, color);
-  // Serial.print(val);
-  // serialEnd();
-  // sprintf(val, "gas%ivalue.bco=%u", gas, color);
-  // Serial.print(val);
-  // serialEnd();
-  // sprintf(val, "unit%i.bco=%u", gas, color);
-  // Serial.print(val);
-  // serialEnd();
   sprintf(val, "dataFlag.val=%i", 1);
   Serial.print(val);
   serialEnd();
   sprintf(val, "gas%iflag.val=%u", gas, color);
   Serial.print(val);
   serialEnd();
-  // sprintf(val, "b%i.bco=%u", gas, color);
-  // Serial.print(val);
-  // serialEnd();
 }
 
 void alarm() {
