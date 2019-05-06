@@ -327,16 +327,7 @@ void sendData() {
           if (LoRa.read() == localAddress) {
             bool dataIntact = true;
             for(int i = 0; i < 4; i++){
-              if(LoRa.read() != lowByte(gas[i])){
-                dataIntact = false;
-              }
-              if(LoRa.read() != highByte(gas[i])){
-                dataIntact = false;
-              }
-              if(LoRa.read() != lowByte(gasPoint[i])){
-                dataIntact = false;
-              }
-              if(LoRa.read() != highByte(gasPoint[i])){
+              if(LoRa.read() != lowByte(gas[i]) || LoRa.read() != highByte(gas[i]) || LoRa.read() != lowByte(gasPoint[i]) || LoRa.read() != highByte(gasPoint[i])){
                 dataIntact = false;
               }
             }
