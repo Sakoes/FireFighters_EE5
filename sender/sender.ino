@@ -75,6 +75,9 @@ int gas[4];
 int gasPrev[4];
 decimal gasPoint[4];
 
+int tres[8] = {10,20,19,23,20,100,100,200};
+decimal tresPoint[8] = {NO, NO, NO, NO, NO, NO, NO, NO};
+
 
 
 NexTouch *nex_listen_list[] =
