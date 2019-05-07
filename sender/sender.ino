@@ -415,70 +415,7 @@ void sendData() {
 }
 
 
-
-void setup() {
-  Serial.begin(9600);
-
-  // put your setup code here, to run once:
-  while (!Serial);
-
-  // override the default CS, reset, and IRQ pins (optional)
-  LoRa.setPins(csPin, resetPin, irqPin);// set CS, reset, IRQ pin
-
-  if (!LoRa.begin(868E6)) {             // initialize ratio at 915 MHz
-    while (true);                       // if failed, do nothing
-  }
-
-
-
-  // put your setup code here, to run once:
-  pinMode(3, INPUT);
-  pinMode(4, INPUT);
-  pinMode(5, INPUT);
-  pinMode(A5, INPUT);
-  pinMode(A0, INPUT);
-  pinMode(A1, OUTPUT);
-  nexInit();
-
-  gas1Text.attachPop(gas1TextPopCallback, &gas1Text);
-  gas2Text.attachPop(gas2TextPopCallback, &gas2Text);
-  gas3Text.attachPop(gas3TextPopCallback, &gas3Text);
-  gas4Text.attachPop(gas4TextPopCallback, &gas4Text);
-  gas1ValueText.attachPop(gas1TextPopCallback, &gas1ValueText);
-  gas2ValueText.attachPop(gas2TextPopCallback, &gas2ValueText);
-  gas3ValueText.attachPop(gas3TextPopCallback, &gas3ValueText);
-  gas4ValueText.attachPop(gas4TextPopCallback, &gas4ValueText);
-  sendButton.attachPush(sendButtonPopCallback, &sendButton);
-
-
-  okButton.attachPop(okButtonPopCallback, &okButton);
-  cancelButton.attachPop(cancelButtonPopCallback, &cancelButton);
-  dotButton.attachPush(dotButtonPushCallback, &dotButton);
-  backButton.attachPush(backButtonPushCallback, &backButton);
-  zeroButton.attachPush(zeroButtonPushCallback, &zeroButton);
-  oneButton.attachPush(oneButtonPushCallback, &oneButton);
-  twoButton.attachPush(twoButtonPushCallback, &twoButton);
-  threeButton.attachPush(threeButtonPushCallback, &threeButton);
-  fourButton.attachPush(fourButtonPushCallback, &fourButton);
-  fiveButton.attachPush(fiveButtonPushCallback, &fiveButton);
-  sixButton.attachPush(sixButtonPushCallback, &sixButton);
-  sevenButton.attachPush(sevenButtonPushCallback, &sevenButton);
-  eightButton.attachPush(eightButtonPushCallback, &eightButton);
-  nineButton.attachPush(nineButtonPushCallback, &nineButton);
-
-
-  //read gas values from EEPROM
-  for(int i = 0; i < 4; i++){
-    gas[i] = word(EEPROM.read(4*i+1), EEPROM.read(4*i));
-    gasPoint[i] = word(EEPROM.read(4*i+3), EEPROM.read(4*i+2));
-  }
-  updateHome();
-}
-
-void loop() {
-
-  nexLoop(nex_listen_list);
-
+void signalStrength(){
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
     // received a packet
@@ -553,6 +490,76 @@ void loop() {
       //Serial.print((char)LoRa.read());
     }
   }
+}
+
+
+
+void setup() {
+  Serial.begin(9600);
+
+  // put your setup code here, to run once:
+  while (!Serial);
+
+  // override the default CS, reset, and IRQ pins (optional)
+  LoRa.setPins(csPin, resetPin, irqPin);// set CS, reset, IRQ pin
+
+  if (!LoRa.begin(868E6)) {             // initialize ratio at 915 MHz
+    while (true);                       // if failed, do nothing
+  }
+
+
+
+  // put your setup code here, to run once:
+  pinMode(3, INPUT);
+  pinMode(4, INPUT);
+  pinMode(5, INPUT);
+  pinMode(A5, INPUT);
+  pinMode(A0, INPUT);
+  pinMode(A1, OUTPUT);
+  nexInit();
+
+  gas1Text.attachPop(gas1TextPopCallback, &gas1Text);
+  gas2Text.attachPop(gas2TextPopCallback, &gas2Text);
+  gas3Text.attachPop(gas3TextPopCallback, &gas3Text);
+  gas4Text.attachPop(gas4TextPopCallback, &gas4Text);
+  gas1ValueText.attachPop(gas1TextPopCallback, &gas1ValueText);
+  gas2ValueText.attachPop(gas2TextPopCallback, &gas2ValueText);
+  gas3ValueText.attachPop(gas3TextPopCallback, &gas3ValueText);
+  gas4ValueText.attachPop(gas4TextPopCallback, &gas4ValueText);
+  sendButton.attachPush(sendButtonPopCallback, &sendButton);
+
+
+  okButton.attachPop(okButtonPopCallback, &okButton);
+  cancelButton.attachPop(cancelButtonPopCallback, &cancelButton);
+  dotButton.attachPush(dotButtonPushCallback, &dotButton);
+  backButton.attachPush(backButtonPushCallback, &backButton);
+  zeroButton.attachPush(zeroButtonPushCallback, &zeroButton);
+  oneButton.attachPush(oneButtonPushCallback, &oneButton);
+  twoButton.attachPush(twoButtonPushCallback, &twoButton);
+  threeButton.attachPush(threeButtonPushCallback, &threeButton);
+  fourButton.attachPush(fourButtonPushCallback, &fourButton);
+  fiveButton.attachPush(fiveButtonPushCallback, &fiveButton);
+  sixButton.attachPush(sixButtonPushCallback, &sixButton);
+  sevenButton.attachPush(sevenButtonPushCallback, &sevenButton);
+  eightButton.attachPush(eightButtonPushCallback, &eightButton);
+  nineButton.attachPush(nineButtonPushCallback, &nineButton);
+
+
+  //read gas values from EEPROM
+  for(int i = 0; i < 4; i++){
+    gas[i] = word(EEPROM.read(4*i+1), EEPROM.read(4*i));
+    gasPoint[i] = word(EEPROM.read(4*i+3), EEPROM.read(4*i+2));
+  }
+  updateHome();
+}
+
+void loop() {
+
+  nexLoop(nex_listen_list);
+
+  signalStrength();
+
+
   // put your main code here, to run repeatedly:
 
 }
