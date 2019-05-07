@@ -46,6 +46,13 @@ NexText gas3ValueText = NexText(0, 8, "gas3value");
 NexText gas4ValueText = NexText(0, 16, "gas4value");
 NexButton sendButton = NexButton(0, 9, "send");
 
+NexButton settingsOkButton = NexButton(3, 3, "b1");
+
+NexText tres1Text = NexText(4, 2, "tres1");
+NexText tres2Text = NexText(4, 3, "tres2");
+NexText tres3Text = NexText(4, 4, "tres3");
+NexText tres4Text = NexText(4, 5, "tres4");
+NexButton sendTresButton = NexButton(4, 6, "sendTres");
 
 NexPage page1 = NexPage(1, 0, "page1");
 NexButton okButton = NexButton(1, 12, "ok");
@@ -66,15 +73,20 @@ NexButton nineButton = NexButton(1, 10, "b9");
 
 char val[80] = {0};
 
-int currentGas = 0;
+
 
 //These are the values of the gasses. If floats are needed, they are reformatted in the UI to show a decimal point
 int gas[4];
 int gasPrev[4];
 decimal gasPoint[4];
+int currentGas = 0;
 
+
+//Values of thresholds
 int tres[8] = {10,20,19,23,20,100,100,200};
+int tresPrev[8];
 decimal tresPoint[8] = {NO, NO, NO, NO, NO, NO, NO, NO};
+int currentTres = 0;
 
 
 
@@ -89,6 +101,12 @@ NexTouch *nex_listen_list[] =
   &gas2ValueText,
   &gas3ValueText,
   &gas4ValueText,
+  &settingsOkButton,
+  &tres1Text,
+  &tres2Text,
+  &tres3Text,
+  &tres4Text,
+  &sendTresButton,
   &sendButton,
   &page1,
   &okButton,
@@ -153,62 +171,198 @@ void sendButtonPopCallback(void *ptr) {
   sendData();
 }
 
-void okButtonPopCallback(void *ptr) {
-  for (int i = 0; i < 3; i++) {
-    gasPrev[i] = gas[i];
-  }
-  updateHome();
 
-  //Save the values in EEPROM
-  for(int i = 0; i < 4; i++){
-    EEPROM.write(4*i, lowByte(gas[i]));
-    EEPROM.write(4*i+1, highByte(gas[i]));
-    EEPROM.write(4*i+2, lowByte(gasPoint[i]));
-    EEPROM.write(4*i+3, highByte(gasPoint[i]));
+
+//THRESHOLD FUNCTIONS
+
+void tres1TextPopCallback(void *ptr){
+  currentTres = 1;
+  Serial.print(F("tresText.txt=\"CH4\""));
+  serialEnd();
+  updateTres();
+}
+
+void tres2TextPopCallback(void *ptr){
+  currentTres = 3;
+  Serial.print(F("tresText.txt=\"O2\""));
+  serialEnd();
+  updateTres();
+}
+
+void tres3TextPopCallback(void *ptr){
+  currentTres = 5;
+  Serial.print(F("tresText.txt=\"CO\""));
+  serialEnd();
+  updateTres();
+}
+
+void tres4TextPopCallback(void *ptr){
+  currentTres = 7;
+  Serial.print(F("tresText.txt=\"IBUT\""));
+  serialEnd();
+  updateTres();
+}
+
+void updateTres(){
+  if(tresPoint[currentTres-1] == SET) {
+    int t1 = tres[currentTres-1] / 10;
+    int t2 = tres[currentTres-1] - (tres[currentTres-1] / 10) * 10;
+    sprintf(val, "a1.txt=\"%i,%i\"", t1, t2);
+    Serial.print(val);
+    serialEnd();
+  }
+  else if(tresPoint[currentTres-1] == CURRENT) {
+    sprintf(val, "a1.txt=\"%i,\"", tres[currentTres-1]);
+    Serial.print(val);
+    serialEnd();
+  }
+  else{
+    sprintf(val, "a1.txt=\"%i\"", tres[currentTres-1]);
+    Serial.print(val);
+    serialEnd();
+  }
+
+  if(tresPoint[currentTres] == SET) {
+    int t1 = tres[currentTres] / 10;
+    int t2 = tres[currentTres] - (tres[currentTres] / 10) * 10;
+    sprintf(val, "a2.txt=\"%i,%i\"", t1, t2);
+    Serial.print(val);
+    serialEnd();
+  }
+  else if(tresPoint[currentTres] == CURRENT) {
+    sprintf(val, "a2.txt=\"%i,\"", tres[currentTres]);
+    Serial.print(val);
+    serialEnd();
+  }
+  else{
+    sprintf(val, "a2.txt=\"%i\"", tres[currentTres]);
+    Serial.print(val);
+    serialEnd();
+  }
+}
+// END OF THRESHOLD FUNCTIONS
+
+
+
+
+void okButtonPopCallback(void *ptr) {
+  if(currentGas != 0){ //Gas value changed
+    Serial.print(F("page 0"));
+    serialEnd();
+    for (int i = 0; i < 4; i++) {
+      gasPrev[i] = gas[i];
+    }
+    //Save the values in EEPROM
+    for(int i = 0; i < 4; i++){
+      EEPROM.write(4*i, lowByte(gas[i]));
+      EEPROM.write(4*i+1, highByte(gas[i]));
+      EEPROM.write(4*i+2, lowByte(gasPoint[i]));
+      EEPROM.write(4*i+3, highByte(gasPoint[i]));
+    }
+
+    updateHome();
+  }
+
+  else{ //Threshold value changed
+    Serial.print(F("page 5"));
+    serialEnd();
+    for (int i = 0; i < 8; i++) {
+      tresPrev[i] = tres[i];
+    }
+    updateTres();
   }
 }
 
 void cancelButtonPopCallback(void *ptr) {
-  for (int i = 0; i < 3; i++) {
-    gas[i] = gasPrev[i];
+  if(currentGas != 0){ //Gas value changed
+    Serial.print(F("page 0"));
+    serialEnd();
+    for (int i = 0; i < 3; i++) {
+      gas[i] = gasPrev[i];
+    }
+    updateHome();
   }
-  updateHome();
+
+  else{ //Threshold value changed
+    Serial.print(F("page 5"));
+    serialEnd();
+    updateTres();
+  }
 }
 
 void dotButtonPushCallback(void *ptr) {
-  if (gasPoint[currentGas - 1] != NO) {
-    throwDecimalSetError();
+  if(currentGas != 0){ //Editing gas value
+    if(gasPoint[currentGas - 1] != NO){
+      throwDecimalSetError();
+    }
+    else{
+      gasPoint[currentGas - 1] = CURRENT;
+    }
   }
-  else {
-    gasPoint[currentGas - 1] = CURRENT;
+
+  else{ //Editing threshold
+    if(tresPoint[currentTres - 1] != NO){
+      throwDecimalSetError();
+    }
+    else{
+      tresPoint[currentTres - 1] = CURRENT;
+    }
   }
   updateValue();
 }
 
 void backButtonPushCallback(void *ptr) {
-  if (gasPoint[currentGas - 1] == SET) {
-    gasPoint[currentGas - 1] = CURRENT;
-    gas[currentGas - 1] /= 10;
+  if(currentGas != 0){  //Editing gas value
+    if(gasPoint[currentGas - 1] == SET){
+      gasPoint[currentGas - 1] = CURRENT;
+      gas[currentGas - 1] /= 10;
+    }
+    else if (gasPoint[currentGas - 1] == CURRENT){
+      gasPoint[currentGas - 1] = NO;
+    }
+    else {
+      gas[currentGas - 1] /= 10;
+    }
   }
-  else if (gasPoint[currentGas - 1] == CURRENT) {
-    gasPoint[currentGas - 1] = NO;
-  }
-  else {
-    gas[currentGas - 1] /= 10;
+  else{ //Editing threshold
+    if(tresPoint[currentTres - 1] == SET){
+      tresPoint[currentTres - 1] = CURRENT;
+      tres[currentTres - 1] /= 10;
+    }
+    else if (tresPoint[currentTres - 1] == CURRENT){
+      tresPoint[currentTres - 1] = NO;
+    }
+    else {
+      gas[currentTres - 1] /= 10;
+    }
   }
   updateValue();
 }
 
 void numberPushed(int x) {
-  if (gasPoint[currentGas - 1] == SET) {
-    throwDecimalSetError();
-  }
-  else {
-    if (gasPoint[currentGas - 1] == CURRENT) {
-      gasPoint[currentGas - 1] = SET;
+  if(currentGas != 0){ //Editing gas value
+    if (gasPoint[currentGas - 1] == SET) {
+      throwDecimalSetError();
     }
-    gas[currentGas - 1] *= 10;
-    gas[currentGas - 1] += x;
+    else {
+      if (gasPoint[currentGas - 1] == CURRENT) {
+        gasPoint[currentGas - 1] = SET;
+      }
+      gas[currentGas - 1] *= 10;
+      gas[currentGas - 1] += x;
+    }
+  }
+  else{
+    if (tresPoint[currentTres - 1] == SET) {
+      throwDecimalSetError();
+    }
+    else {
+      if (tresPoint[currentTres - 1] == CURRENT) {
+        tresPoint[currentTres - 1] = SET;
+      }
+      tres[currentTres - 1] *= 10;
+      tres[currentTres - 1] += x;
+    }
   }
   updateValue();
 }
@@ -255,22 +409,44 @@ void nineButtonPushCallback(void *ptr) {
 
 
 void updateValue() {
-  if(gasPoint[currentGas-1] == SET) {
-    int t1 = gas[currentGas-1] / 10;
-    int t2 = gas[currentGas-1] - (gas[currentGas-1] / 10) * 10;
-    sprintf(val, "gasValue.txt=\"%i,%i\"", t1, t2);
-    Serial.print(val);
-    serialEnd();
+  if(currentGas != 0){ //Editing gas value
+    if(gasPoint[currentGas-1] == SET) {
+      int t1 = gas[currentGas-1] / 10;
+      int t2 = gas[currentGas-1] - (gas[currentGas-1] / 10) * 10;
+      sprintf(val, "gasValue.txt=\"%i,%i\"", t1, t2);
+      Serial.print(val);
+      serialEnd();
+    }
+    else if(gasPoint[currentGas-1] == CURRENT) {
+      sprintf(val, "gasValue.txt=\"%i,\"", gas[currentGas-1]);
+      Serial.print(val);
+      serialEnd();
+    }
+    else{
+      sprintf(val, "gasValue.txt=\"%i\"", gas[currentGas-1]);
+      Serial.print(val);
+      serialEnd();
+    }
   }
-  else if(gasPoint[currentGas-1] == CURRENT) {
-    sprintf(val, "gasValue.txt=\"%i,\"", gas[currentGas-1]);
-    Serial.print(val);
-    serialEnd();
-  }
-  else{
-    sprintf(val, "gasValue.txt=\"%i\"", gas[currentGas-1]);
-    Serial.print(val);
-    serialEnd();
+
+  else{ //Editing threshold value
+    if(tresPoint[currentTres-1] == SET) {
+      int t1 = tres[currentTres-1] / 10;
+      int t2 = tres[currentTres-1] - (tres[currentTres-1] / 10) * 10;
+      sprintf(val, "gasValue.txt=\"%i,%i\"", t1, t2);
+      Serial.print(val);
+      serialEnd();
+    }
+    else if(tresPoint[currentTres-1] == CURRENT) {
+      sprintf(val, "gasValue.txt=\"%i,\"", tres[currentTres-1]);
+      Serial.print(val);
+      serialEnd();
+    }
+    else{
+      sprintf(val, "gasValue.txt=\"%i\"", gas[currentTres-1]);
+      Serial.print(val);
+      serialEnd();
+    }
   }
 }
 
@@ -527,6 +703,14 @@ void setup() {
   gas3ValueText.attachPop(gas3TextPopCallback, &gas3ValueText);
   gas4ValueText.attachPop(gas4TextPopCallback, &gas4ValueText);
   sendButton.attachPush(sendButtonPopCallback, &sendButton);
+
+  settingsOkButton.attachPop(updateHome, &settingsOkButton);
+
+  tres1Text.attachPop(tres1TextPopCallback, &tres1Text);
+  tres2Text.attachPop(tres2TextPopCallback, &tres2Text);
+  tres3Text.attachPop(tres3TextPopCallback, &tres3Text);
+  tres4Text.attachPop(tres4TextPopCallback, &tres4Text);
+  tresholdButton.attachPop(sendTresholds, &tresholdButton);
 
 
   okButton.attachPop(okButtonPopCallback, &okButton);
