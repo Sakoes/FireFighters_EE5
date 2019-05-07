@@ -29,8 +29,8 @@ unsigned long currentMillis;
 const unsigned long period = 500 ; //the period of blinking LEDs/buzzer
 
 
-int tresHolds[8] = {10,20,19,23,20,100,100,200};
-int tresPoint[] = {NO,NO,NO,NO,NO,NO,NO,NO};
+int tres[8] = {10,20,19,23,20,100,100,200};
+int tresPoint[8] = {NO,NO,NO,NO,NO,NO,NO,NO};
 const unsigned int alarmColor1 = 63488;
 const unsigned int alarmColor2 = 64512;
 const unsigned int neutralColor = 65535;
@@ -148,77 +148,134 @@ void loop() {
   sendData();
 }
 
-void tresReceive(){
-  // try to parse packet
-  if (LoRa.parsePacket()) {
-    while (LoRa.available()) {
-      if (LoRa.read() == localAddress && LoRa.read() == 0x00) {
-        for(int i = 0; i < 4; i++){
-          gas[i] = word(LoRa.read(), LoRa.read());
-          gasPoint[i] = word(LoRa.read(), LoRa.read());
-        }
+// void tresReceive(){
+//   // try to parse packet
+//   if (LoRa.parsePacket()) {
+//     while (LoRa.available()) {
+//       if (LoRa.read() == localAddress && LoRa.read() == 0x00) {
+//         for(int i = 0; i < 4; i++){
+//           gas[i] = word(LoRa.read(), LoRa.read());
+//           gasPoint[i] = word(LoRa.read(), LoRa.read());
+//         }
+//
+//         LoRa.beginPacket();
+//         LoRa.write(destination);
+//         for(int i = 0; i < 4; i++){
+//           LoRa.write(lowByte(gas[i]));
+//           LoRa.write(highByte(gas[i]));
+//           LoRa.write(lowByte(gasPoint[i]));
+//           LoRa.write(highByte(gasPoint[i]));
+//         }
+//         LoRa.endPacket();
+// }
 
-        LoRa.beginPacket();
-        LoRa.write(destination);
-        for(int i = 0; i < 4; i++){
-          LoRa.write(lowByte(gas[i]));
-          LoRa.write(highByte(gas[i]));
-          LoRa.write(lowByte(gasPoint[i]));
-          LoRa.write(highByte(gasPoint[i]));
-        }
-        LoRa.endPacket();
-}
 
 void loraReceive(){
-  // try to parse packet
-  if (LoRa.parsePacket()) {
-    while (LoRa.available()) {
-      if (LoRa.read() == localAddress && LoRa.read() == 0xff) {
-        for(int i = 0; i < 4; i++){
-          gas[i] = word(LoRa.read(), LoRa.read());
-          gasPoint[i] = word(LoRa.read(), LoRa.read());
+  if(LoRa.parsePacket()){
+    while(LoRa.available()){
+      if(LoRa.read() == localAddress){
+        if(LoRa.read() == 0xFF){  //GAS VALUES
+          for(int i = 0; i < 4; i++){
+            gas[i] = word(LoRa.read(), LoRa.read());
+            gasPoint[i] = word(LoRa.read(), LoRa.read());
+          }
+          LoRa.beginPacket();
+          LoRa.write(destination);
+          LoRa.write(0xFF)
+          for(int i = 0; i < 4; i++){
+            LoRa.write(lowByte(gas[i]));
+            LoRa.write(highByte(gas[i]));
+            LoRa.write(lowByte(gasPoint[i]));
+            LoRa.write(highByte(gasPoint[i]));
+          }
+          LoRa.endPacket();
+
+          printData();
+
+          //Clear ackflag
+          checkGasses();
         }
 
-
-        //Sending Acknowledgement
-        //LoRa.beginPacket();
-        //LoRa.write(destination);
-        //LoRa.write(0xFF);//Acknowledgement
-        //LoRa.endPacket();
-        LoRa.beginPacket();
-        LoRa.write(destination);
-        for(int i = 0; i < 4; i++){
-          LoRa.write(lowByte(gas[i]));
-          LoRa.write(highByte(gas[i]));
-          LoRa.write(lowByte(gasPoint[i]));
-          LoRa.write(highByte(gasPoint[i]));
+        else if(LoRa.read() == 0x00){ //THRESHOLD VALUES
+          for(int i = 0; i < 8; i++){
+            tres[i] = word(LoRa.read(), LoRa.read());
+            tresPoint[i] = word(LoRa.read(), LoRa.read());
+          }
+          LoRa.beginPacket();
+          LoRa.write(destination);
+          LoRa.write(0x00)
+          for(int i = 0; i < 8; i++){
+            LoRa.write(lowByte(tres[i]));
+            LoRa.write(highByte(tres[i]));
+            LoRa.write(lowByte(tresPoint[i]));
+            LoRa.write(highByte(tresPoint[i]));
+          }
+          LoRa.endPacket();
         }
-        LoRa.endPacket();
-
-
-        printData();
-
-        //Clear ackflag
-        checkGasses();
       }
     }
-
-    // print RSSI of packet
-    sprintf(val, "lora.txt=\"%i\"", LoRa.packetRssi());
-    Serial.print(val);
-    serialEnd();
   }
 }
+
+
+
+// void loraReceive(){
+//   // try to parse packet
+//   if (LoRa.parsePacket()) {
+//     while (LoRa.available()) {
+//       if(LoRa.read() == localAddress){
+//         if(LoRa.read() == 0xFF){}
+//       }
+//
+//
+//
+//       if (LoRa.read() == localAddress && LoRa.read() == 0xff) {
+//
+//         for(int i = 0; i < 4; i++){
+//           gas[i] = word(LoRa.read(), LoRa.read());
+//           gasPoint[i] = word(LoRa.read(), LoRa.read());
+//         }
+//
+//
+//         //Sending Acknowledgement
+//         //LoRa.beginPacket();
+//         //LoRa.write(destination);
+//         //LoRa.write(0xFF);//Acknowledgement
+//         //LoRa.endPacket();
+//         LoRa.beginPacket();
+//         LoRa.write(destination);
+//         for(int i = 0; i < 4; i++){
+//           LoRa.write(lowByte(gas[i]));
+//           LoRa.write(highByte(gas[i]));
+//           LoRa.write(lowByte(gasPoint[i]));
+//           LoRa.write(highByte(gasPoint[i]));
+//         }
+//         LoRa.endPacket();
+//
+//
+//         printData();
+//
+//         //Clear ackflag
+//         checkGasses();
+//       }
+//     }
+//
+//     // print RSSI of packet
+//     sprintf(val, "lora.txt=\"%i\"", LoRa.packetRssi());
+//     Serial.print(val);
+//     serialEnd();
+//   }
+// }
 
 void checkGasses(){
   for(int i = 0; i < 4; i++){
     switch (i) {
       case 1: //O2
-        if(gas[i] >= tresHolds[2*i+1]){
+        if(gas[i] >= tres[2*i+1]){
           alarmFlag2 = true;
           setAlarmBackground(i+1, 1);
         }
-        else if(gas[i] <= tresHolds[2*i]){
+        else if(gas[i] <= tres[2*i]){
           alarmFlag1 = true;
           setAlarmBackground(i+1, 1);
         }
@@ -228,11 +285,11 @@ void checkGasses(){
         break;
 
       default: //All other gasses
-        if(gas[i] >= tresHolds[2*i+1]){
+        if(gas[i] >= tres[2*i+1]){
           alarmFlag2 = true;
           setAlarmBackground(i+1, 1);
         }
-        else if(gas[i] >= tresHolds[2*i]){
+        else if(gas[i] >= tres[2*i]){
           alarmFlag1 = true;
           setAlarmBackground(i+1, 2);
         }

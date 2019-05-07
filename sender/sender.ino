@@ -306,7 +306,7 @@ void sendTresholds(){
     LoRa.beginPacket();
     LoRa.write(destination);
     LoRa.write(0x00);
-    for(int i = 0; i < 4; i++){
+    for(int i = 0; i < 8; i++){
       LoRa.write(lowByte(tres[i]));
       LoRa.write(highByte(tres[i]));
       LoRa.write(lowByte(tresPoint[i]));
@@ -324,9 +324,9 @@ void sendTresholds(){
 
         // read packet
         while (LoRa.available()) {
-          if (LoRa.read() == localAddress) {
+          if (LoRa.read() == localAddress && LoRa.read() == 0x00) {
             bool dataIntact = true;
-            for(int i = 0; i < 4; i++){
+            for(int i = 0; i < 8; i++){
               if(LoRa.read() != lowByte(tres[i]) || LoRa.read() != highByte(tres[i]) || LoRa.read() != lowByte(tresPoint[i]) || LoRa.read() != highByte(tresPoint[i])){
                 dataIntact = false;
               }
@@ -347,7 +347,7 @@ void sendTresholds(){
     //Notify user that sending failed and that there might be connectivity issues
   }
   else{
-    Serial.print(F("message.txt=\"Data sent!\""));
+    Serial.print(F("page 3"));
     serialEnd();
   }
 
@@ -365,7 +365,7 @@ void sendData() {
     attempt++;
     LoRa.beginPacket();
     LoRa.write(destination);
-    LoRa.write(0xff);
+    LoRa.write(0xFF);
     for(int i = 0; i < 4; i++){
       LoRa.write(lowByte(gas[i]));
       LoRa.write(highByte(gas[i]));
@@ -384,7 +384,7 @@ void sendData() {
 
         // read packet
         while (LoRa.available()) {
-          if (LoRa.read() == localAddress) {
+          if (LoRa.read() == localAddress && LoRa.read() = 0xFF) {
             bool dataIntact = true;
             for(int i = 0; i < 4; i++){
               if(LoRa.read() != lowByte(gas[i]) || LoRa.read() != highByte(gas[i]) || LoRa.read() != lowByte(gasPoint[i]) || LoRa.read() != highByte(gasPoint[i])){
