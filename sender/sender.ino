@@ -52,7 +52,7 @@ NexText tres1Text = NexText(4, 2, "tres1");
 NexText tres2Text = NexText(4, 3, "tres2");
 NexText tres3Text = NexText(4, 4, "tres3");
 NexText tres4Text = NexText(4, 5, "tres4");
-NexButton sendTresButton = NexButton(4, 6, "sendTres");
+NexButton tresholdButton = NexButton(4, 6, "sendTres");
 
 NexPage page1 = NexPage(1, 0, "page1");
 NexButton okButton = NexButton(1, 12, "ok");
@@ -106,7 +106,7 @@ NexTouch *nex_listen_list[] =
   &tres2Text,
   &tres3Text,
   &tres4Text,
-  &sendTresButton,
+  &tresholdButton,
   &sendButton,
   &page1,
   &okButton,
@@ -526,9 +526,6 @@ void sendTresholds(){
     Serial.print(F("page 3"));
     serialEnd();
   }
-
-
-  }
 }
 
 void sendData() {
@@ -560,7 +557,7 @@ void sendData() {
 
         // read packet
         while (LoRa.available()) {
-          if (LoRa.read() == localAddress && LoRa.read() = 0xFF) {
+          if (LoRa.read() == localAddress && LoRa.read() == 0xFF) {
             bool dataIntact = true;
             for(int i = 0; i < 4; i++){
               if(LoRa.read() != lowByte(gas[i]) || LoRa.read() != highByte(gas[i]) || LoRa.read() != lowByte(gasPoint[i]) || LoRa.read() != highByte(gasPoint[i])){
@@ -733,6 +730,12 @@ void setup() {
   for(int i = 0; i < 4; i++){
     gas[i] = word(EEPROM.read(4*i+1), EEPROM.read(4*i));
     gasPoint[i] = word(EEPROM.read(4*i+3), EEPROM.read(4*i+2));
+  }
+  for (int i = 0; i < 4; i++) { //Copy current values
+    gasPrev[i] = gas[i];
+  }
+  for (int i = 0; i < 8; i++) {
+    tresPrev[i] = tres[i];
   }
   updateHome();
 }
