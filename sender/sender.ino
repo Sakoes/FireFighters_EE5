@@ -54,6 +54,9 @@ NexText tres3Text = NexText(4, 4, "tres3");
 NexText tres4Text = NexText(4, 5, "tres4");
 NexButton tresholdButton = NexButton(4, 6, "sendTres");
 
+NexText a1Text = NexText(5, 4, "a1");
+NexText a2Text = NexText(5, 5, "a2");
+
 NexPage page1 = NexPage(1, 0, "page1");
 NexButton okButton = NexButton(1, 12, "ok");
 NexButton cancelButton = NexButton(1, 14, "cancel");
@@ -107,6 +110,8 @@ NexTouch *nex_listen_list[] =
   &tres3Text,
   &tres4Text,
   &tresholdButton,
+  &a1Text,
+  &a2Text,
   &sendButton,
   &page1,
   &okButton,
@@ -201,6 +206,18 @@ void tres4TextPopCallback(void *ptr){
   Serial.print(F("tresText.txt=\"IBUT\""));
   serialEnd();
   updateTres();
+}
+
+void a1TextPopCallback(void *ptr){
+  if(currentTres == 2 || currentTres == 4 || currentTres == 6 || currentTres == 8){
+    currentTres--;
+  }
+}
+
+void a2TextPopCallback(void *ptr){
+  if(currentTres == 1 || currentTres == 3 || currentTres == 5 || currentTres == 7){
+    currentTres++;
+  }
 }
 
 void updateTres(){
@@ -709,6 +726,8 @@ void setup() {
   tres4Text.attachPop(tres4TextPopCallback, &tres4Text);
   tresholdButton.attachPop(sendTresholds, &tresholdButton);
 
+  a1Text.attachPop(a1TextPopCallback, &a1Text);
+  a2Text.attachPop(a2TextPopCallback, &a2Text);
 
   okButton.attachPop(okButtonPopCallback, &okButton);
   cancelButton.attachPop(cancelButtonPopCallback, &cancelButton);
