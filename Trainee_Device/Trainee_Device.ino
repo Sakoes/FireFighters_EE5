@@ -181,7 +181,7 @@ void loraReceive(){
           }
           LoRa.beginPacket();
           LoRa.write(destination);
-          LoRa.write(0xFF)
+          LoRa.write(0xFF);
           for(int i = 0; i < 4; i++){
             LoRa.write(lowByte(gas[i]));
             LoRa.write(highByte(gas[i]));
@@ -203,7 +203,7 @@ void loraReceive(){
           }
           LoRa.beginPacket();
           LoRa.write(destination);
-          LoRa.write(0x00)
+          LoRa.write(0x00);
           for(int i = 0; i < 8; i++){
             LoRa.write(lowByte(tres[i]));
             LoRa.write(highByte(tres[i]));
@@ -267,15 +267,35 @@ void loraReceive(){
 //   }
 // }
 
+int compareGas(int index){
+  if(gasPoint[index] == SET){
+    return gas[index];
+  }
+  else{
+    return gas[index]*10;
+  }
+}
+
+int compareTres(int index){
+  if(tresPoint[index] == SET){
+    return tres[index];
+  }
+  else{
+    return tres[index]*10;
+  }
+}
+
+
+
 void checkGasses(){
   for(int i = 0; i < 4; i++){
     switch (i) {
       case 1: //O2
-        if(gas[i] >= tres[2*i+1]){
+        if(compareGas(i) >= compareTres(2*i+1)){
           alarmFlag2 = true;
           setAlarmBackground(i+1, 1);
         }
-        else if(gas[i] <= tres[2*i]){
+        else if(compareGas(i) <= compareTres(2*i)){
           alarmFlag1 = true;
           setAlarmBackground(i+1, 1);
         }
@@ -285,11 +305,11 @@ void checkGasses(){
         break;
 
       default: //All other gasses
-        if(gas[i] >= tres[2*i+1]){
+        if(compareGas(i) >= compareTres(2*i+1)){
           alarmFlag2 = true;
           setAlarmBackground(i+1, 1);
         }
-        else if(gas[i] >= tres[2*i]){
+        else if(compareGas(i) >= compareTres(2*i)){
           alarmFlag1 = true;
           setAlarmBackground(i+1, 2);
         }
