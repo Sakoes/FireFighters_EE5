@@ -47,12 +47,14 @@ NexText gas4ValueText = NexText(0, 16, "gas4value");
 NexButton sendButton = NexButton(0, 9, "send");
 
 NexButton settingsOkButton = NexButton(3, 3, "b1");
+NexButton editTresButton = NexButton(3, 2, "editTres");
 
 NexText tres1Text = NexText(4, 2, "tres1");
 NexText tres2Text = NexText(4, 3, "tres2");
 NexText tres3Text = NexText(4, 4, "tres3");
 NexText tres4Text = NexText(4, 5, "tres4");
 NexButton tresholdButton = NexButton(4, 6, "sendTres");
+NexButton cancelTresButton = NexButton(4, 8, "cancel");
 
 NexText a1Text = NexText(5, 4, "a1");
 NexText a2Text = NexText(5, 5, "a2");
@@ -82,6 +84,7 @@ char val[80] = {0};
 int gas[4];
 int gasPrev[4];
 decimal gasPoint[4];
+decimal gasPointPrev[4];
 int currentGas = 0;
 
 
@@ -89,7 +92,12 @@ int currentGas = 0;
 int tres[8] = {10,20,19,23,20,100,100,200};
 int tresPrev[8];
 decimal tresPoint[8] = {NO, NO, NO, NO, NO, NO, NO, NO};
+decimal tresPointPrev[8] = {NO, NO, NO, NO, NO, NO, NO, NO};
 int currentTres = 0;
+
+int tresBackup[8];
+decimal tresPointBackup[8];
+
 
 
 
@@ -105,11 +113,13 @@ NexTouch *nex_listen_list[] =
   &gas3ValueText,
   &gas4ValueText,
   &settingsOkButton,
+  &editTresButton,
   &tres1Text,
   &tres2Text,
   &tres3Text,
   &tres4Text,
   &tresholdButton,
+  &cancelTresButton,
   &a1Text,
   &a2Text,
   &sendButton,
@@ -212,12 +222,14 @@ void a1TextPopCallback(void *ptr){
   if(currentTres == 2 || currentTres == 4 || currentTres == 6 || currentTres == 8){
     currentTres--;
   }
+  updateValue();
 }
 
 void a2TextPopCallback(void *ptr){
   if(currentTres == 1 || currentTres == 3 || currentTres == 5 || currentTres == 7){
     currentTres++;
   }
+  updateValue();
 }
 
 void updateTres(){
@@ -257,6 +269,24 @@ void updateTres(){
     serialEnd();
   }
 }
+
+void backupTres(void *ptr){
+  for (int i = 0; i < 8; i++) {
+    tresBackup[i] = tres[i];
+  }
+  for (int i = 0; i < 8; i++) {
+    tresPointBackup[i] = tresPoint[i];
+  }
+}
+
+void loadTres(void *ptr){
+  for (int i = 0; i < 8; i++) {
+    tres[i] = tresBackup[i];
+  }
+  for (int i = 0; i < 8; i++) {
+    tresPoint[i] = tresPointBackup[i];
+  }
+}
 // END OF THRESHOLD FUNCTIONS
 
 
@@ -268,6 +298,9 @@ void okButtonPopCallback(void *ptr) {
     serialEnd();
     for (int i = 0; i < 4; i++) {
       gasPrev[i] = gas[i];
+    }
+    for (int i = 0; i < 4; i++) {
+      gasPointPrev[i] = gasPoint[i];
     }
     //Save the values in EEPROM
     for(int i = 0; i < 4; i++){
@@ -286,6 +319,12 @@ void okButtonPopCallback(void *ptr) {
     for (int i = 0; i < 8; i++) {
       tresPrev[i] = tres[i];
     }
+    for (int i = 0; i < 8; i++) {
+      tresPointPrev[i] = tresPoint[i];
+    }
+    if(currentTres%2==0){
+      currentTres--;
+    }
     updateTres();
   }
 }
@@ -297,6 +336,9 @@ void cancelButtonPopCallback(void *ptr) {
     for (int i = 0; i < 4; i++) {
       gas[i] = gasPrev[i];
     }
+    for (int i = 0; i < 4; i++) {
+      gasPoint[i] = gasPrev[i];
+    }
     updateHome();
   }
 
@@ -305,6 +347,12 @@ void cancelButtonPopCallback(void *ptr) {
     serialEnd();
     for (int i = 0; i < 8; i++) {
       tres[i] = tresPrev[i];
+    }
+    for (int i = 0; i < 8; i++) {
+      tresPoint[i] = tresPointPrev[i];
+    }
+    if(currentTres%2==0){
+      currentTres--;
     }
     updateTres();
   }
@@ -353,7 +401,7 @@ void backButtonPushCallback(void *ptr) {
       tresPoint[currentTres - 1] = NO;
     }
     else {
-      gas[currentTres - 1] /= 10;
+      tres[currentTres - 1] /= 10;
     }
   }
   updateValue();
@@ -463,7 +511,7 @@ void updateValue() {
       serialEnd();
     }
     else{
-      sprintf(val, "gasValue.txt=\"%i\"", gas[currentTres-1]);
+      sprintf(val, "gasValue.txt=\"%i\"", tres[currentTres-1]);
       Serial.print(val);
       serialEnd();
     }
@@ -538,7 +586,7 @@ void sendTresholds(){
 
   //Was an acknowledgement received?
   if(!ackReceived){
-    Serial.print(F("message.txt=\"No acknowledgement received. Transmission might have failed.\""));
+    Serial.print(F("message.txt=\"No acknowledgement received. Is the other device turned on and in range?\""));
     serialEnd();
     //Notify user that sending failed and that there might be connectivity issues
   }
@@ -722,12 +770,14 @@ void setup() {
   sendButton.attachPush(sendButtonPopCallback, &sendButton);
 
   settingsOkButton.attachPop(updateHome, &settingsOkButton);
+  editTresButton.attachPop(backupTres, &editTresButton);
 
   tres1Text.attachPop(tres1TextPopCallback, &tres1Text);
   tres2Text.attachPop(tres2TextPopCallback, &tres2Text);
   tres3Text.attachPop(tres3TextPopCallback, &tres3Text);
   tres4Text.attachPop(tres4TextPopCallback, &tres4Text);
   tresholdButton.attachPop(sendTresholds, &tresholdButton);
+  cancelTresButton.attachPop(loadTres, &cancelTresButton);
 
   a1Text.attachPop(a1TextPopCallback, &a1Text);
   a2Text.attachPop(a2TextPopCallback, &a2Text);
@@ -753,11 +803,17 @@ void setup() {
     gas[i] = word(EEPROM.read(4*i+1), EEPROM.read(4*i));
     gasPoint[i] = word(EEPROM.read(4*i+3), EEPROM.read(4*i+2));
   }
-  for (int i = 0; i < 4; i++) { //Copy current values
+  for (int i = 0; i < 4; i++) { //Copy current values to prev
     gasPrev[i] = gas[i];
+  }
+  for (int i = 0; i < 4; i++) { //Copy current values
+    gasPointPrev[i] = gasPoint[i];
   }
   for (int i = 0; i < 8; i++) {
     tresPrev[i] = tres[i];
+  }
+  for (int i = 0; i < 8; i++) {
+    tresPointPrev[i] = tresPoint[i];
   }
   updateHome();
 }
