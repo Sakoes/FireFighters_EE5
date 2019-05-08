@@ -294,7 +294,7 @@ void cancelButtonPopCallback(void *ptr) {
   if(currentGas != 0){ //Gas value changed
     Serial.print(F("page 0"));
     serialEnd();
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 4; i++) {
       gas[i] = gasPrev[i];
     }
     updateHome();
@@ -303,6 +303,9 @@ void cancelButtonPopCallback(void *ptr) {
   else{ //Threshold value changed
     Serial.print(F("page 5"));
     serialEnd();
+    for (int i = 0; i < 8; i++) {
+      tres[i] = tresPrev[i];
+    }
     updateTres();
   }
 }
