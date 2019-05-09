@@ -13,17 +13,17 @@ enum decimal {
 };
 
 
-union         //I can't find how to make an array of union maybe gas2[2]?
-{
-  float flat;
-  byte bytelat[4];
-} gps_lat;
-
-union
-{
-  float flon;
-  byte bytelon[4];
-} gps_lon;
+// union         //I can't find how to make an array of union maybe gas2[2]?
+// {
+//   float flat;
+//   byte bytelat[4];
+// } gps_lat;
+//
+// union
+// {
+//   float flon;
+//   byte bytelon[4];
+// } gps_lon;
 
 const int csPin = 10;          // LoRa radio chip select
 const int resetPin = 9;       // LoRa radio reset
@@ -35,7 +35,6 @@ byte destination = 0xBB;      // destination to send to
 
 
 //(page, id, objectName)
-NexPage page0 = NexPage(0, 0, "page0");
 NexText gas1Text = NexText(0, 1, "gas1");
 NexText gas2Text = NexText(0, 2, "gas2");
 NexText gas3Text = NexText(0, 3, "gas3");
@@ -59,7 +58,6 @@ NexButton cancelTresButton = NexButton(4, 8, "cancel");
 NexText a1Text = NexText(5, 4, "a1");
 NexText a2Text = NexText(5, 5, "a2");
 
-NexPage page1 = NexPage(1, 0, "page1");
 NexButton okButton = NexButton(1, 12, "ok");
 NexButton cancelButton = NexButton(1, 14, "cancel");
 NexButton dotButton = NexButton(1, 15, "dot");
@@ -76,7 +74,7 @@ NexButton eightButton = NexButton(1, 9, "b8");
 NexButton nineButton = NexButton(1, 10, "b9");
 
 
-char val[80] = {0};
+char val[60] = {0};
 
 
 
@@ -103,7 +101,6 @@ decimal tresPointBackup[8];
 
 NexTouch *nex_listen_list[] =
 {
-  &page0,
   &gas1Text,
   &gas2Text,
   &gas3Text,
@@ -123,7 +120,6 @@ NexTouch *nex_listen_list[] =
   &a1Text,
   &a2Text,
   &sendButton,
-  &page1,
   &okButton,
   &cancelButton,
   &dotButton,
@@ -234,9 +230,7 @@ void a2TextPopCallback(void *ptr){
 
 void updateTres(){
   if(tresPoint[currentTres-1] == SET) {
-    int t1 = tres[currentTres-1] / 10;
-    int t2 = tres[currentTres-1] - (tres[currentTres-1] / 10) * 10;
-    sprintf(val, "a1.txt=\"%i,%i\"", t1, t2);
+    sprintf(val, "a1.txt=\"%i,%i\"", tres[currentTres-1] / 10, tres[currentTres-1] - (tres[currentTres-1] / 10) * 10);
     Serial.print(val);
     serialEnd();
   }
@@ -252,9 +246,7 @@ void updateTres(){
   }
 
   if(tresPoint[currentTres] == SET) {
-    int t1 = tres[currentTres] / 10;
-    int t2 = tres[currentTres] - (tres[currentTres] / 10) * 10;
-    sprintf(val, "a2.txt=\"%i,%i\"", t1, t2);
+    sprintf(val, "a2.txt=\"%i,%i\"", tres[currentTres] / 10, tres[currentTres] - (tres[currentTres] / 10) * 10);
     Serial.print(val);
     serialEnd();
   }
@@ -521,9 +513,7 @@ void updateValue() {
 void updateHome() {
   for(int i = 0; i < 4; i++){
     if (gasPoint[i] == SET) {
-      int t1 = gas[i] / 10;
-      int t2 = gas[i] - (gas[i] / 10) * 10;
-      sprintf(val, "gas%ivalue.txt=\"%i,%i\"", i+1, t1, t2);
+      sprintf(val, "gas%ivalue.txt=\"%i,%i\"", i+1, gas[i] / 10, gas[i] - (gas[i] / 10) * 10);
       Serial.print(val);
       serialEnd();
     }
