@@ -314,26 +314,6 @@ void loop() {
   nexLoop(nex_listen_list);
 }
 
-void tresReceive(){
-  // try to parse packet
-  if (LoRa.parsePacket()) {
-    while (LoRa.available()) {
-      if (LoRa.read() == localAddress && LoRa.read() == 0x00) {
-        for(int i = 0; i < 8; i++){
-          tres[i] = word(LoRa.read(), LoRa.read());
-          tresPoint[i] = word(LoRa.read(), LoRa.read());
-        }
-
-        LoRa.beginPacket();
-        LoRa.write(destination);
-        for(int i = 0; i < 8; i++){
-          LoRa.write(lowByte(tres[i]));
-          LoRa.write(highByte(tres[i]));
-          LoRa.write(lowByte(tresPoint[i]));
-          LoRa.write(highByte(tresPoint[i]));
-        }
-        LoRa.endPacket();
-}
 // void tresReceive(){
 //   // try to parse packet
 //   if (LoRa.parsePacket()) {
