@@ -314,7 +314,6 @@ void loop() {
   nexLoop(nex_listen_list);
 }
 
-<<<<<<< HEAD
 void tresReceive(){
   // try to parse packet
   if (LoRa.parsePacket()) {
@@ -335,7 +334,6 @@ void tresReceive(){
         }
         LoRa.endPacket();
 }
-=======
 // void tresReceive(){
 //   // try to parse packet
 //   if (LoRa.parsePacket()) {
@@ -357,7 +355,6 @@ void tresReceive(){
 //         LoRa.endPacket();
 // }
 
->>>>>>> d96b7e2bb4f0357fe397697686ad20f66529cfcd
 
 void loraReceive(){
   if(LoRa.parsePacket()){
