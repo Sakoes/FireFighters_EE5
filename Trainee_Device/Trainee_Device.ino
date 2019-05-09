@@ -14,6 +14,51 @@ enum decimal {
 };
 
 
+NexText gas1Text = NexText(0, 5, "gas1");
+NexText gas2Text = NexText(0, 6, "gas2");
+NexText gas3Text = NexText(0, 7, "gas3");
+NexText gas4Text = NexText(0, 8, "gas4");
+NexText gas1ValueText = NexText(0, 14, "gas1value");
+NexText gas2ValueText = NexText(0, 15, "gas2value");
+NexText gas3ValueText = NexText(0, 16, "gas3value");
+NexText gas4ValueText = NexText(0, 17, "gas4value");
+NexText unit1Text = NexText(0, 9, "unit1");
+NexText unit2Text = NexText(0, 10, "unit2");
+NexText unit3Text = NexText(0, 12, "unit3");
+NexText unit4Text = NexText(0, 11, "unit4");
+NexButton b1Button = NexButton(0, 4, "b1");
+NexButton b2Button = NexButton(0, 3, "b2");
+NexButton b3Button = NexButton(0, 2, "b3");
+NexButton b4Button = NexButton(0, 1, "b4");
+
+NexPage page1 = NexPage(1, 0, "page1");
+
+
+
+NexTouch *nex_listen_list[] =
+{
+  &gas1Text,
+  &gas2Text,
+  &gas3Text,
+  &gas4Text,
+  &gas1ValueText,
+  &gas2ValueText,
+  &gas3ValueText,
+  &gas4ValueText,
+  &unit1Text,
+  &unit2Text,
+  &unit3Text,
+  &unit4Text,
+  &b1Button,
+  &b2Button,
+  &b3Button,
+  &b4Button,
+  &page1,
+  NULL
+};  // End of touch event list
+
+
+
 
 int gas[4] = {0, 21, 0, 0}; //CH4 O2 CO IBUT
 decimal gasPoint[4];
@@ -29,8 +74,8 @@ unsigned long currentMillis;
 const unsigned long period = 500 ; //the period of blinking LEDs/buzzer
 
 
-int tresHolds[8] = {10,20,19,23,20,100,100,200};
-int tresPoint[] = {NO,NO,NO,NO,NO,NO,NO,NO};
+int tres[8] = {10,25,19,99,20,123,100,201};
+int tresPoint[8] = {NO,NO,NO,NO,NO,NO,NO,NO};
 const unsigned int alarmColor1 = 63488;
 const unsigned int alarmColor2 = 64512;
 const unsigned int neutralColor = 65535;
@@ -57,6 +102,61 @@ void serialEnd() {
   Serial.write(0xff);
   Serial.write(0xff);
 }
+
+void showThresholds1(void *ptr) {
+  showThresholds(1);
+}
+
+void showThresholds2(void *ptr) {
+  showThresholds(2);
+}
+
+void showThresholds3(void *ptr) {
+  showThresholds(3);
+}
+
+void showThresholds4(void *ptr) {
+  showThresholds(4);
+}
+
+void showThresholds(int num) {
+  if(tresPoint[2*(num-1)] == SET) {
+    int t1 = tres[2*(num-1)] / 10;
+    int t2 = tres[2*(num-1)] - (tres[2*(num-1)] / 10) * 10;
+    sprintf(val, "treshold1.txt=\"%i,%i\"", t1, t2);
+    Serial.print(val);
+    serialEnd();
+  }
+  else if(tresPoint[2*(num-1)] == CURRENT) {
+    sprintf(val, "treshold1.txt=\"%i,\"", tres[2*(num-1)]);
+    Serial.print(val);
+    serialEnd();
+  }
+  else{
+    sprintf(val, "treshold1.txt=\"%i\"", tres[2*(num-1)]);
+    Serial.print(val);
+    serialEnd();
+  }
+
+  if(tresPoint[2*(num-1)+1] == SET) {
+    int t1 = tres[2*(num-1)+1] / 10;
+    int t2 = tres[2*(num-1)+1] - (tres[2*(num-1)+1] / 10) * 10;
+    sprintf(val, "treshold2.txt=\"%i,%i\"", t1, t2);
+    Serial.print(val);
+    serialEnd();
+  }
+  else if(tresPoint[2*(num-1)+1] == CURRENT) {
+    sprintf(val, "treshold2.txt=\"%i,\"", tres[2*(num-1)+1]);
+    Serial.print(val);
+    serialEnd();
+  }
+  else{
+    sprintf(val, "treshold2.txt=\"%i\"", tres[2*(num-1)+1]);
+    Serial.print(val);
+    serialEnd();
+  }
+}
+
 
 void sendData() {
   if (millis() > rssiMillis + 1000) {
@@ -120,6 +220,26 @@ void setup() {
   rssiMillis = millis();
 
 
+  nexInit();
+
+  gas1Text.attachPop(showThresholds1, &gas1Text);
+  gas2Text.attachPop(showThresholds2, &gas2Text);
+  gas3Text.attachPop(showThresholds3, &gas3Text);
+  gas4Text.attachPop(showThresholds4, &gas4Text);
+  gas1ValueText.attachPop(showThresholds1, &gas1ValueText);
+  gas2ValueText.attachPop(showThresholds2, &gas2ValueText);
+  gas3ValueText.attachPop(showThresholds3, &gas3ValueText);
+  gas4ValueText.attachPop(showThresholds4, &gas4ValueText);
+  unit1Text.attachPop(showThresholds1, &unit1Text);
+  unit2Text.attachPop(showThresholds2, &unit2Text);
+  unit3Text.attachPop(showThresholds3, &unit3Text);
+  unit4Text.attachPop(showThresholds4, &unit4Text);
+  b1Button.attachPop(showThresholds1, &b1Button);
+  b2Button.attachPop(showThresholds2, &b2Button);
+  b3Button.attachPop(showThresholds3, &b3Button);
+  b4Button.attachPop(showThresholds4, &b4Button);
+
+
   while (!Serial);
   //Serial.println("LoRa Receiver");
   LoRa.setPins(10, 9, 2);
@@ -128,7 +248,7 @@ void setup() {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
-  nexInit();
+
 }
 
 
@@ -146,8 +266,11 @@ void loop() {
 
   //An empty LoRa packet is sent to the instructor device, for signal strength
   sendData();
+
+  nexLoop(nex_listen_list);
 }
 
+<<<<<<< HEAD
 void tresReceive(){
   // try to parse packet
   if (LoRa.parsePacket()) {
@@ -168,57 +291,156 @@ void tresReceive(){
         }
         LoRa.endPacket();
 }
+=======
+// void tresReceive(){
+//   // try to parse packet
+//   if (LoRa.parsePacket()) {
+//     while (LoRa.available()) {
+//       if (LoRa.read() == localAddress && LoRa.read() == 0x00) {
+//         for(int i = 0; i < 4; i++){
+//           gas[i] = word(LoRa.read(), LoRa.read());
+//           gasPoint[i] = word(LoRa.read(), LoRa.read());
+//         }
+//
+//         LoRa.beginPacket();
+//         LoRa.write(destination);
+//         for(int i = 0; i < 4; i++){
+//           LoRa.write(lowByte(gas[i]));
+//           LoRa.write(highByte(gas[i]));
+//           LoRa.write(lowByte(gasPoint[i]));
+//           LoRa.write(highByte(gasPoint[i]));
+//         }
+//         LoRa.endPacket();
+// }
+
+>>>>>>> d96b7e2bb4f0357fe397697686ad20f66529cfcd
 
 void loraReceive(){
-  // try to parse packet
-  if (LoRa.parsePacket()) {
-    while (LoRa.available()) {
-      if (LoRa.read() == localAddress && LoRa.read() == 0xff) {
-        for(int i = 0; i < 4; i++){
-          gas[i] = word(LoRa.read(), LoRa.read());
-          gasPoint[i] = word(LoRa.read(), LoRa.read());
+  if(LoRa.parsePacket()){
+    while(LoRa.available()){
+      if(LoRa.read() == localAddress){
+        if(LoRa.read() == 0xFF){  //GAS VALUES
+          for(int i = 0; i < 4; i++){
+            gas[i] = word(LoRa.read(), LoRa.read());
+            gasPoint[i] = word(LoRa.read(), LoRa.read());
+          }
+          LoRa.beginPacket();
+          LoRa.write(destination);
+          LoRa.write(0xFF);
+          for(int i = 0; i < 4; i++){
+            LoRa.write(lowByte(gas[i]));
+            LoRa.write(highByte(gas[i]));
+            LoRa.write(lowByte(gasPoint[i]));
+            LoRa.write(highByte(gasPoint[i]));
+          }
+          LoRa.endPacket();
+
+          printData();
+
+          //Clear ackflag
+          checkGasses();
         }
 
-
-        //Sending Acknowledgement
-        //LoRa.beginPacket();
-        //LoRa.write(destination);
-        //LoRa.write(0xFF);//Acknowledgement
-        //LoRa.endPacket();
-        LoRa.beginPacket();
-        LoRa.write(destination);
-        for(int i = 0; i < 4; i++){
-          LoRa.write(lowByte(gas[i]));
-          LoRa.write(highByte(gas[i]));
-          LoRa.write(lowByte(gasPoint[i]));
-          LoRa.write(highByte(gasPoint[i]));
+        else if(LoRa.read() == 0x00){ //THRESHOLD VALUES
+          for(int i = 0; i < 8; i++){
+            tres[i] = word(LoRa.read(), LoRa.read());
+            tresPoint[i] = word(LoRa.read(), LoRa.read());
+          }
+          LoRa.beginPacket();
+          LoRa.write(destination);
+          LoRa.write(0x00);
+          for(int i = 0; i < 8; i++){
+            LoRa.write(lowByte(tres[i]));
+            LoRa.write(highByte(tres[i]));
+            LoRa.write(lowByte(tresPoint[i]));
+            LoRa.write(highByte(tresPoint[i]));
+          }
+          LoRa.endPacket();
         }
-        LoRa.endPacket();
-
-
-        printData();
-
-        //Clear ackflag
-        checkGasses();
       }
     }
-
-    // print RSSI of packet
-    sprintf(val, "lora.txt=\"%i\"", LoRa.packetRssi());
-    Serial.print(val);
-    serialEnd();
   }
 }
+
+
+
+// void loraReceive(){
+//   // try to parse packet
+//   if (LoRa.parsePacket()) {
+//     while (LoRa.available()) {
+//       if(LoRa.read() == localAddress){
+//         if(LoRa.read() == 0xFF){}
+//       }
+//
+//
+//
+//       if (LoRa.read() == localAddress && LoRa.read() == 0xff) {
+//
+//         for(int i = 0; i < 4; i++){
+//           gas[i] = word(LoRa.read(), LoRa.read());
+//           gasPoint[i] = word(LoRa.read(), LoRa.read());
+//         }
+//
+//
+//         //Sending Acknowledgement
+//         //LoRa.beginPacket();
+//         //LoRa.write(destination);
+//         //LoRa.write(0xFF);//Acknowledgement
+//         //LoRa.endPacket();
+//         LoRa.beginPacket();
+//         LoRa.write(destination);
+//         for(int i = 0; i < 4; i++){
+//           LoRa.write(lowByte(gas[i]));
+//           LoRa.write(highByte(gas[i]));
+//           LoRa.write(lowByte(gasPoint[i]));
+//           LoRa.write(highByte(gasPoint[i]));
+//         }
+//         LoRa.endPacket();
+//
+//
+//         printData();
+//
+//         //Clear ackflag
+//         checkGasses();
+//       }
+//     }
+//
+//     // print RSSI of packet
+//     sprintf(val, "lora.txt=\"%i\"", LoRa.packetRssi());
+//     Serial.print(val);
+//     serialEnd();
+//   }
+// }
+
+int compareGas(int index){
+  if(gasPoint[index] == SET){
+    return gas[index];
+  }
+  else{
+    return gas[index]*10;
+  }
+}
+
+int compareTres(int index){
+  if(tresPoint[index] == SET){
+    return tres[index];
+  }
+  else{
+    return tres[index]*10;
+  }
+}
+
+
 
 void checkGasses(){
   for(int i = 0; i < 4; i++){
     switch (i) {
       case 1: //O2
-        if(gas[i] >= tresHolds[2*i+1]){
+        if(compareGas(i) >= compareTres(2*i+1)){
           alarmFlag2 = true;
           setAlarmBackground(i+1, 1);
         }
-        else if(gas[i] <= tresHolds[2*i]){
+        else if(compareGas(i) <= compareTres(2*i)){
           alarmFlag1 = true;
           setAlarmBackground(i+1, 1);
         }
@@ -228,11 +450,11 @@ void checkGasses(){
         break;
 
       default: //All other gasses
-        if(gas[i] >= tresHolds[2*i+1]){
+        if(compareGas(i) >= compareTres(2*i+1)){
           alarmFlag2 = true;
           setAlarmBackground(i+1, 1);
         }
-        else if(gas[i] >= tresHolds[2*i]){
+        else if(compareGas(i) >= compareTres(2*i)){
           alarmFlag1 = true;
           setAlarmBackground(i+1, 2);
         }
