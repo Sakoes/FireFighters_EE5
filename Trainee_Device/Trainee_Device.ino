@@ -153,18 +153,18 @@ void tresReceive(){
   if (LoRa.parsePacket()) {
     while (LoRa.available()) {
       if (LoRa.read() == localAddress && LoRa.read() == 0x00) {
-        for(int i = 0; i < 4; i++){
-          gas[i] = word(LoRa.read(), LoRa.read());
-          gasPoint[i] = word(LoRa.read(), LoRa.read());
+        for(int i = 0; i < 8; i++){
+          tres[i] = word(LoRa.read(), LoRa.read());
+          tresPoint[i] = word(LoRa.read(), LoRa.read());
         }
 
         LoRa.beginPacket();
         LoRa.write(destination);
-        for(int i = 0; i < 4; i++){
-          LoRa.write(lowByte(gas[i]));
-          LoRa.write(highByte(gas[i]));
-          LoRa.write(lowByte(gasPoint[i]));
-          LoRa.write(highByte(gasPoint[i]));
+        for(int i = 0; i < 8; i++){
+          LoRa.write(lowByte(tres[i]));
+          LoRa.write(highByte(tres[i]));
+          LoRa.write(lowByte(tresPoint[i]));
+          LoRa.write(highByte(tresPoint[i]));
         }
         LoRa.endPacket();
 }

@@ -306,7 +306,7 @@ void sendTresholds(){
     LoRa.beginPacket();
     LoRa.write(destination);
     LoRa.write(0x00);
-    for(int i = 0; i < 4; i++){
+    for(int i = 0; i < 8; i++){
       LoRa.write(lowByte(tres[i]));
       LoRa.write(highByte(tres[i]));
       LoRa.write(lowByte(tresPoint[i]));
@@ -326,7 +326,7 @@ void sendTresholds(){
         while (LoRa.available()) {
           if (LoRa.read() == localAddress) {
             bool dataIntact = true;
-            for(int i = 0; i < 4; i++){
+            for(int i = 0; i < 8; i++){
               if(LoRa.read() != lowByte(tres[i]) || LoRa.read() != highByte(tres[i]) || LoRa.read() != lowByte(tresPoint[i]) || LoRa.read() != highByte(tresPoint[i])){
                 dataIntact = false;
               }
