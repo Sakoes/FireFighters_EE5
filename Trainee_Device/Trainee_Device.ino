@@ -5,6 +5,7 @@
 #define LED2   A1
 #define LED3   A2     //A2
 #define ACKBUT A3
+#define TOGGLEBUT A4
 #define BUZZER 5
 
 enum decimal {
@@ -31,8 +32,10 @@ NexButton b2Button = NexButton(0, 3, "b2");
 NexButton b3Button = NexButton(0, 2, "b3");
 NexButton b4Button = NexButton(0, 1, "b4");
 
-NexPage page1 = NexPage(1, 0, "page1");
-
+NexButton backButton1 = NexButton(1, 11, "backBtn");
+NexButton backButton2 = NexButton(2, 11, "backBtn");
+NexButton backButton3 = NexButton(3, 11, "backBtn");
+NexButton backButton4 = NexButton(4, 11, "backBtn");
 
 
 NexTouch *nex_listen_list[] =
@@ -53,11 +56,15 @@ NexTouch *nex_listen_list[] =
   &b2Button,
   &b3Button,
   &b4Button,
-  &page1,
+  &backButton1,
+  &backButton2,
+  &backButton3,
+  &backButton4,
   NULL
 };  // End of touch event list
 
 
+int page = 0;
 
 
 int gas[4] = {0, 21, 0, 0}; //CH4 O2 CO IBUT
@@ -84,6 +91,8 @@ boolean  alarmFlag1 =   false; //buzzer on when true
 boolean  alarmFlag2 =   false;
 
 
+boolean toggleDebounce = false;
+
 union  // saving Latitude
 {
   float flat;
@@ -103,19 +112,23 @@ void serialEnd() {
   Serial.write(0xff);
 }
 
-void showThresholds1(void *ptr) {
+void showThresholds1() {
+  page = 1;
   showThresholds(1);
 }
 
-void showThresholds2(void *ptr) {
+void showThresholds2() {
+  page = 2;
   showThresholds(2);
 }
 
-void showThresholds3(void *ptr) {
+void showThresholds3() {
+  page = 3;
   showThresholds(3);
 }
 
-void showThresholds4(void *ptr) {
+void showThresholds4() {
+  page = 4;
   showThresholds(4);
 }
 
@@ -201,6 +214,7 @@ void printData() {
       serialEnd();
     }
   }
+  page = 0;
 }
 
 
@@ -215,6 +229,7 @@ void setup() {
   pinMode(LED3,  OUTPUT);
   pinMode(BUZZER, OUTPUT);
   pinMode(ACKBUT, INPUT);
+  pinMode(TOGGLEBUT, INPUT);
 
   startMillis = millis();
   rssiMillis = millis();
@@ -238,6 +253,10 @@ void setup() {
   b2Button.attachPop(showThresholds2, &b2Button);
   b3Button.attachPop(showThresholds3, &b3Button);
   b4Button.attachPop(showThresholds4, &b4Button);
+  backButton1.attachPop(printData, &backButton1);
+  backButton2.attachPop(printData, &backButton2);
+  backButton3.attachPop(printData, &backButton3);
+  backButton4.attachPop(printData, &backButton4);
 
 
   while (!Serial);
@@ -259,6 +278,31 @@ void loop() {
   if(digitalRead(ACKBUT) == HIGH){
     alarmFlag1 = false;
     alarmFlag2 = false;
+  }
+
+  if(digitalRead(TOGGLEBUT) == HIGH && toggleDebounce == false){
+    toggleDebounce = true;
+    if(page == 4){
+      page = 0;
+    }
+    else{
+      page++;
+    }
+    sprintf(val, "page %i", page);
+    Serial.print(val);
+    serialEnd();
+    if(page == 1)
+      showThresholds1();
+    else if(page == 2)
+      showThresholds2();
+    else if(page == 3)
+      showThresholds3();
+    else if(page == 4)
+      showThresholds4();
+  }
+
+  else if(digitalRead(TOGGLEBUT) == LOW && toggleDebounce == true){
+    toggleDebounce = false;
   }
 
   //This function will check if an alarmFlag is true and will start the alarm if so
