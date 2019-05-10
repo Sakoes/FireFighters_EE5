@@ -6,6 +6,7 @@
 #define LED3   A2     //A2
 #define ACKBUT A3
 #define TOGGLEBUT A4
+#define BATTERY A5
 #define BUZZER 5
 
 enum decimal {
@@ -81,7 +82,7 @@ unsigned long currentMillis;
 const unsigned long period = 500 ; //the period of blinking LEDs/buzzer
 
 
-int tres[8] = {10,25,19,99,20,123,100,201};
+int tres[8] = {10,20,19,23,20,100,100,200};
 int tresPoint[8] = {NO,NO,NO,NO,NO,NO,NO,NO};
 const unsigned int alarmColor1 = 63488;
 const unsigned int alarmColor2 = 64512;
@@ -310,7 +311,7 @@ void loop() {
 
   //An empty LoRa packet is sent to the instructor device, for signal strength
   sendData();
-
+  batteryMeasurement();
   nexLoop(nex_listen_list);
 }
 
@@ -518,5 +519,30 @@ void alarm() {
       digitalWrite(LED2, LOW);
       digitalWrite(LED3, LOW);
     }
+  }
+}
+
+void batteryMeasurement() {
+  float rawV = (analogRead(BATTERY) * 4.74) / 1024;      //figure out the battery voltage (4.98 is the actual reading of my 5V pin)                                              //some logic to set values
+
+  if (rawV < 3.7) {                           //battery @ 3.5V or less
+    sprintf(val, "battery.pic=%i", 6);
+    Serial.print(val);
+    serialEnd();
+  }
+  else if (rawV > 3.7 && rawV < 3.9) {               //battery @ 3.8V
+    sprintf(val, "battery.pic=%i", 3);
+    Serial.print(val);
+    serialEnd();
+  }
+  else if (rawV > 3.9 && rawV < 4.1) {               //battery @ 3.9V
+    sprintf(val, "battery.pic=%i", 5);
+    Serial.print(val);
+    serialEnd();
+  }
+  else if (rawV > 4.1) {                            //battery @ 4.2V 100% battery
+    sprintf(val, "battery.pic=%i", 0);
+    Serial.print(val);
+    serialEnd();
   }
 }
