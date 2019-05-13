@@ -341,7 +341,8 @@ void loraReceive(){
   if(LoRa.parsePacket()){
     while(LoRa.available()){
       if(LoRa.read() == localAddress){
-        if(LoRa.read() == 0xFF){  //GAS VALUES
+        byte mode = LoRa.read();
+        if(mode == 0xFF){  //GAS VALUES
           for(int i = 0; i < 4; i++){
             gas[i] = word(LoRa.read(), LoRa.read());
             gasPoint[i] = word(LoRa.read(), LoRa.read());
@@ -363,7 +364,7 @@ void loraReceive(){
           checkGasses();
         }
 
-        else if(LoRa.read() == 0x00){ //THRESHOLD VALUES
+        else if(mode == 0x00){ //THRESHOLD VALUES
           for(int i = 0; i < 8; i++){
             tres[i] = word(LoRa.read(), LoRa.read());
             tresPoint[i] = word(LoRa.read(), LoRa.read());
@@ -525,24 +526,20 @@ void alarm() {
 void batteryMeasurement() {
   float rawV = (analogRead(BATTERY) * 4.74) / 1024;      //figure out the battery voltage (4.98 is the actual reading of my 5V pin)                                              //some logic to set values
 
+  int pic;
   if (rawV < 3.7) {                           //battery @ 3.5V or less
-    sprintf(val, "battery.pic=%i", 6);
-    Serial.print(val);
-    serialEnd();
+    pic = 6;
   }
   else if (rawV > 3.7 && rawV < 3.9) {               //battery @ 3.8V
-    sprintf(val, "battery.pic=%i", 3);
-    Serial.print(val);
-    serialEnd();
+    pic = 3;
   }
   else if (rawV > 3.9 && rawV < 4.1) {               //battery @ 3.9V
-    sprintf(val, "battery.pic=%i", 5);
-    Serial.print(val);
-    serialEnd();
+    pic = 5;
   }
   else if (rawV > 4.1) {                            //battery @ 4.2V 100% battery
-    sprintf(val, "battery.pic=%i", 0);
-    Serial.print(val);
-    serialEnd();
+    pic = 0;
   }
+  sprintf(val, "battery.pic=%i", pic);
+  Serial.print(val);
+  serialEnd();
 }

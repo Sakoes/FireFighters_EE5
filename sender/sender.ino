@@ -820,25 +820,20 @@ void loop() {
 
 void batteryMeasurement() {
   float rawV = (analogRead(BATTERY) * 4.98) / 1024;      //figure out the battery voltage (4.98 is the actual reading of my 5V pin)                                              //some logic to set values
-
+  int pic;
   if (rawV < 3.7) {                           //battery @ 3.5V or less
-    sprintf(val, "battery.pic=%i", 10);
-    Serial.print(val);
-    serialEnd();
+    pic = 10;
   }
   else if (rawV > 3.7 && rawV < 3.9) {               //battery @ 3.8V
-    sprintf(val, "battery.pic=%i", 9);
-    Serial.print(val);
-    serialEnd();
+    pic = 9;
   }
   else if (rawV > 3.9 && rawV < 4.1) {               //battery @ 3.9V
-    sprintf(val, "battery.pic=%i", 8);
-    Serial.print(val);
-    serialEnd();
+    pic = 8;
   }
   else if (rawV > 4.1) {                            //battery @ 4.2V 100% battery
-    sprintf(val, "battery.pic=%i", 7);
-    Serial.print(val);
-    serialEnd();
+    pic = 7;
   }
+  sprintf(val, "battery.pic=%i", pic);
+  Serial.print(val);
+  serialEnd();
 }
