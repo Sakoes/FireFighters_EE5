@@ -135,9 +135,7 @@ void showThresholds4() {
 
 void showThresholds(int num) {
   if(tresPoint[2*(num-1)] == SET) {
-    int t1 = tres[2*(num-1)] / 10;
-    int t2 = tres[2*(num-1)] - (tres[2*(num-1)] / 10) * 10;
-    sprintf(val, "treshold1.txt=\"%i,%i\"", t1, t2);
+    sprintf(val, "treshold1.txt=\"%i,%i\"", tres[2*(num-1)] / 10, tres[2*(num-1)] - (tres[2*(num-1)] / 10) * 10);
     Serial.print(val);
     serialEnd();
   }
@@ -153,9 +151,7 @@ void showThresholds(int num) {
   }
 
   if(tresPoint[2*(num-1)+1] == SET) {
-    int t1 = tres[2*(num-1)+1] / 10;
-    int t2 = tres[2*(num-1)+1] - (tres[2*(num-1)+1] / 10) * 10;
-    sprintf(val, "treshold2.txt=\"%i,%i\"", t1, t2);
+    sprintf(val, "treshold2.txt=\"%i,%i\"", tres[2*(num-1)+1] / 10, tres[2*(num-1)+1] - (tres[2*(num-1)+1] / 10) * 10);
     Serial.print(val);
     serialEnd();
   }
@@ -203,9 +199,7 @@ void printData() {
   serialEnd();
   for (int i = 0; i < 4; i++) {
     if (gasPoint[i] == SET) {
-      int t1 = gas[i] / 10;
-      int t2 = gas[i] - (gas[i] / 10) * 10;
-      sprintf(val, "gas%ivalue.txt=\"%i,%i\"", i + 1, t1, t2);
+      sprintf(val, "gas%ivalue.txt=\"%i,%i\"", i + 1, gas[i] / 10, gas[i] - (gas[i] / 10) * 10);
       Serial.print(val);
       serialEnd();
     }
@@ -216,6 +210,19 @@ void printData() {
     }
   }
   page = 0;
+}
+
+void updatePage(){
+  if(page == 0)
+    printData();
+  else if(page == 1)
+    showThresholds1();
+  else if(page == 2)
+    showThresholds2();
+  else if(page == 3)
+    showThresholds3();
+  else if(page == 4)
+    showThresholds4();
 }
 
 
@@ -268,6 +275,7 @@ void setup() {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
+  LoRa.enableCrc();
 
 }
 
@@ -275,6 +283,18 @@ void setup() {
 void loop() {
   loraReceive();
 
+
+
+  //This function will check if an alarmFlag is true and will start the alarm if so
+  alarm();
+
+  //An empty LoRa packet is sent to the instructor device, for signal strength
+  sendData();
+  batteryMeasurement();
+  nexLoop(nex_listen_list);
+}
+
+void checkButtons(){
   //Button pressed: turn off alarms
   if(digitalRead(ACKBUT) == HIGH){
     alarmFlag1 = false;
@@ -292,27 +312,12 @@ void loop() {
     sprintf(val, "page %i", page);
     Serial.print(val);
     serialEnd();
-    if(page == 1)
-      showThresholds1();
-    else if(page == 2)
-      showThresholds2();
-    else if(page == 3)
-      showThresholds3();
-    else if(page == 4)
-      showThresholds4();
+    updatePage();
   }
 
   else if(digitalRead(TOGGLEBUT) == LOW && toggleDebounce == true){
     toggleDebounce = false;
   }
-
-  //This function will check if an alarmFlag is true and will start the alarm if so
-  alarm();
-
-  //An empty LoRa packet is sent to the instructor device, for signal strength
-  sendData();
-  batteryMeasurement();
-  nexLoop(nex_listen_list);
 }
 
 // void tresReceive(){
@@ -358,8 +363,6 @@ void loraReceive(){
           }
           LoRa.endPacket();
 
-          printData();
-
           //Clear ackflag
           checkGasses();
         }
@@ -380,6 +383,7 @@ void loraReceive(){
           }
           LoRa.endPacket();
         }
+        updatePage();
       }
     }
   }

@@ -552,7 +552,7 @@ void sendTresholds(){
 
     //check a few times whether data has been received, to give time to the receiver to send the package
     for(int i = 0; i < 10; i++){
-      delay(5);
+      delay(18);
 
       int packetSize = LoRa.parsePacket();
       if (packetSize) {
@@ -609,7 +609,7 @@ void sendData() {
 
     //check a few times whether data has been received, to give time to the receiver to send the package
     for(int i = 0; i < 10; i++){
-      delay(5);
+      delay(10);
 
       int packetSize = LoRa.parsePacket();
       if (packetSize) {
@@ -698,26 +698,22 @@ void signalStrength(){
         sprintf(val, "signal.val=%i", strength);
         Serial.print(val);
         serialEnd();
+        int pic;
         if(strength > -70){
-          sprintf(val, "p0.pic=%i", 6);
-          Serial.print(val);
-          serialEnd();
+          pic = 6;
         }
         else if(strength > -95){
-          sprintf(val, "p0.pic=%i", 5);
-          Serial.print(val);
-          serialEnd();
+          pic = 5;
         }
         else if(strength > -115){
-          sprintf(val, "p0.pic=%i", 4);
-          Serial.print(val);
-          serialEnd();
+          pic = 4;
         }
         else{
-          sprintf(val, "p0.pic=%i", 3);
-          Serial.print(val);
-          serialEnd();
+          pic = 3;
         }
+        sprintf(val, "p0.pic=%i", pic);
+        Serial.print(val);
+        serialEnd();
         //LoRa.endPacket();
       }
       //Serial.print((char)LoRa.read());
@@ -739,6 +735,7 @@ void setup() {
   if (!LoRa.begin(868E6)) {             // initialize ratio at 915 MHz
     while (true);                       // if failed, do nothing
   }
+  LoRa.enableCrc();
 
 
 
