@@ -36,6 +36,7 @@ byte destination = 0xBB;      // destination to send to
 
 
 
+
 //(page, id, objectName)
 NexText gas1Text = NexText(0, 1, "gas1");
 NexText gas2Text = NexText(0, 2, "gas2");
@@ -98,7 +99,10 @@ int currentTres = 0;
 int tresBackup[8];
 decimal tresPointBackup[8];
 
+bool message = false;
+unsigned int lastMessage;
 
+unsigned int lastBatteryMeasurement;
 
 
 NexTouch *nex_listen_list[] =
@@ -552,24 +556,24 @@ void sendTresholds(){
 
     //check a few times whether data has been received, to give time to the receiver to send the package
     for(int i = 0; i < 10; i++){
-      delay(18);
-
+      delay(5);
       int packetSize = LoRa.parsePacket();
       if (packetSize) {
         // received a packet
 
         // read packet
         while (LoRa.available()) {
-          if (LoRa.read() == localAddress && LoRa.read() == 0x00) {
-            bool dataIntact = true;
-            for(int i = 0; i < 8; i++){
-              if(LoRa.read() != lowByte(tres[i]) || LoRa.read() != highByte(tres[i]) || LoRa.read() != lowByte(tresPoint[i]) || LoRa.read() != highByte(tresPoint[i])){
-                dataIntact = false;
-              }
-            }
-            if(dataIntact == true){
-              ackReceived = true;
-            }
+          if (LoRa.read() == localAddress && LoRa.read() == 0xAA) {
+            ackReceived = true;
+            // bool dataIntact = true;
+            // for(int i = 0; i < 8; i++){
+            //   if(LoRa.read() != lowByte(tres[i]) || LoRa.read() != highByte(tres[i]) || LoRa.read() != lowByte(tresPoint[i]) || LoRa.read() != highByte(tresPoint[i])){
+            //     dataIntact = false;
+            //   }
+            // }
+            // if(dataIntact == true){
+            //   ackReceived = true;
+            // }
           }
         }
       }
@@ -586,6 +590,8 @@ void sendTresholds(){
     Serial.print(F("page 3"));
     serialEnd();
   }
+  message = true;
+  lastMessage = millis();
 }
 
 void sendData() {
@@ -609,24 +615,24 @@ void sendData() {
 
     //check a few times whether data has been received, to give time to the receiver to send the package
     for(int i = 0; i < 10; i++){
-      delay(10);
-
+      delay(5);
       int packetSize = LoRa.parsePacket();
-      if (packetSize) {
+      if (packetSize){
         // received a packet
 
         // read packet
         while (LoRa.available()) {
-          if (LoRa.read() == localAddress && LoRa.read() == 0xFF) {
-            bool dataIntact = true;
-            for(int i = 0; i < 4; i++){
-              if(LoRa.read() != lowByte(gas[i]) || LoRa.read() != highByte(gas[i]) || LoRa.read() != lowByte(gasPoint[i]) || LoRa.read() != highByte(gasPoint[i])){
-                dataIntact = false;
-              }
-            }
-            if(dataIntact == true){
-              ackReceived = true;
-            }
+          if (LoRa.read() == localAddress && LoRa.read() == 0xAA) {
+            ackReceived = true;
+            // bool dataIntact = true;
+            // for(int i = 0; i < 4; i++){
+            //   if(LoRa.read() != lowByte(gas[i]) || LoRa.read() != highByte(gas[i]) || LoRa.read() != lowByte(gasPoint[i]) || LoRa.read() != highByte(gasPoint[i])){
+            //     dataIntact = false;
+            //   }
+            // }
+            // if(dataIntact == true){
+            //   ackReceived = true;
+            // }
           }
         }
       }
@@ -635,7 +641,7 @@ void sendData() {
 
   //Was an acknowledgement received?
   if(!ackReceived){
-    Serial.print(F("message.txt=\"No acknowledgement received. Transmission might have failed.\""));
+    Serial.print(F("message.txt=\"Transmission problems possible.\""));
     serialEnd();
     //Notify user that sending failed and that there might be connectivity issues
   }
@@ -643,8 +649,8 @@ void sendData() {
     Serial.print(F("message.txt=\"Data sent!\""));
     serialEnd();
   }
-
-
+  message = true;
+  lastMessage = millis();
 }
 
 
@@ -813,24 +819,37 @@ void loop() {
   batteryMeasurement();
   signalStrength();
 
+  checkMessage();
+}
+
+void checkMessage(){
+  if(message == true && millis() - lastMessage > 8000){
+    message = false;
+    Serial.print(F("message.txt=\"\""));
+    serialEnd();
+  }
 }
 
 void batteryMeasurement() {
-  float rawV = (analogRead(BATTERY) * 4.98) / 1024;      //figure out the battery voltage (4.98 is the actual reading of my 5V pin)                                              //some logic to set values
-  int pic;
-  if (rawV < 3.7) {                           //battery @ 3.5V or less
-    pic = 10;
+  if(millis() - lastBatteryMeasurement > 10000){
+    float rawV = (analogRead(BATTERY) * 4.98) / 1024;      //figure out the battery voltage (4.98 is the actual reading of my 5V pin)                                              //some logic to set values
+    int pic;
+    if (rawV < 3.7) {                           //battery @ 3.5V or less
+      pic = 10;
+    }
+    else if (rawV > 3.7 && rawV < 3.9) {               //battery @ 3.8V
+      pic = 9;
+    }
+    else if (rawV > 3.9 && rawV < 4.1) {               //battery @ 3.9V
+      pic = 8;
+    }
+    else if (rawV > 4.1) {                            //battery @ 4.2V 100% battery
+      pic = 7;
+    }
+    sprintf(val, "battery.pic=%i", pic);
+    Serial.print(val);
+    serialEnd();
+    lastBatteryMeasurement = millis();
   }
-  else if (rawV > 3.7 && rawV < 3.9) {               //battery @ 3.8V
-    pic = 9;
-  }
-  else if (rawV > 3.9 && rawV < 4.1) {               //battery @ 3.9V
-    pic = 8;
-  }
-  else if (rawV > 4.1) {                            //battery @ 4.2V 100% battery
-    pic = 7;
-  }
-  sprintf(val, "battery.pic=%i", pic);
-  Serial.print(val);
-  serialEnd();
+
 }

@@ -188,7 +188,6 @@ void sendData() {
     //   LoRa.write(*(lat+i));
     // }
     LoRa.endPacket();
-    rssiMillis = 0;
     rssiMillis = millis();
     //Serial.print("gas1.bco=0");
   }
@@ -290,7 +289,7 @@ void loop() {
 
   //An empty LoRa packet is sent to the instructor device, for signal strength
   sendData();
-  batteryMeasurement();
+  //batteryMeasurement();
   nexLoop(nex_listen_list);
 }
 
@@ -354,13 +353,13 @@ void loraReceive(){
           }
           LoRa.beginPacket();
           LoRa.write(destination);
-          LoRa.write(0xFF);
-          for(int i = 0; i < 4; i++){
-            LoRa.write(lowByte(gas[i]));
-            LoRa.write(highByte(gas[i]));
-            LoRa.write(lowByte(gasPoint[i]));
-            LoRa.write(highByte(gasPoint[i]));
-          }
+          LoRa.write(0xAA);
+          // for(int i = 0; i < 4; i++){
+          //   LoRa.write(lowByte(gas[i]));
+          //   LoRa.write(highByte(gas[i]));
+          //   LoRa.write(lowByte(gasPoint[i]));
+          //   LoRa.write(highByte(gasPoint[i]));
+          // }
           LoRa.endPacket();
 
           //Clear ackflag
@@ -374,13 +373,13 @@ void loraReceive(){
           }
           LoRa.beginPacket();
           LoRa.write(destination);
-          LoRa.write(0x00);
-          for(int i = 0; i < 8; i++){
-            LoRa.write(lowByte(tres[i]));
-            LoRa.write(highByte(tres[i]));
-            LoRa.write(lowByte(tresPoint[i]));
-            LoRa.write(highByte(tresPoint[i]));
-          }
+          LoRa.write(0xAA);
+          // for(int i = 0; i < 8; i++){
+          //   LoRa.write(lowByte(tres[i]));
+          //   LoRa.write(highByte(tres[i]));
+          //   LoRa.write(lowByte(tresPoint[i]));
+          //   LoRa.write(highByte(tresPoint[i]));
+          // }
           LoRa.endPacket();
         }
         updatePage();
