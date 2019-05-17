@@ -235,36 +235,17 @@ void a2TextPopCallback(void *ptr){
 }
 
 void updateTres(){
-  if(tresPoint[currentTres-1] == SET) {
-    sprintf(val, "a1.txt=\"%i,%i\"", tres[currentTres-1] / 10, tres[currentTres-1] - (tres[currentTres-1] / 10) * 10);
-    Serial.print(val);
-    serialEnd();
-  }
-  else if(tresPoint[currentTres-1] == CURRENT) {
-    sprintf(val, "a1.txt=\"%i,\"", tres[currentTres-1]);
-    Serial.print(val);
-    serialEnd();
-  }
-  else{
-    sprintf(val, "a1.txt=\"%i\"", tres[currentTres-1]);
-    Serial.print(val);
-    serialEnd();
-  }
-
-  if(tresPoint[currentTres] == SET) {
-    sprintf(val, "a2.txt=\"%i,%i\"", tres[currentTres] / 10, tres[currentTres] - (tres[currentTres] / 10) * 10);
-    Serial.print(val);
-    serialEnd();
-  }
-  else if(tresPoint[currentTres] == CURRENT) {
-    sprintf(val, "a2.txt=\"%i,\"", tres[currentTres]);
-    Serial.print(val);
-    serialEnd();
-  }
-  else{
-    sprintf(val, "a2.txt=\"%i\"", tres[currentTres]);
-    Serial.print(val);
-    serialEnd();
+  for(int i = 0; i < 2; i++){
+    if(tresPoint[currentTres-i] == SET) {
+      sprintf(val, "a%i.txt=\"%i,%i\"", i+1, tres[currentTres-i] / 10, tres[currentTres-i] - (tres[currentTres-i] / 10) * 10);
+      Serial.print(val);
+      serialEnd();
+    }
+    else{
+      sprintf(val, "a%i.txt=\"%i\"", i+1, tres[currentTres-i]);
+      Serial.print(val);
+      serialEnd();
+    }
   }
 }
 
