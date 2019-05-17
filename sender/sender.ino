@@ -407,6 +407,8 @@ void backButtonPushCallback(void *ptr) {
 
 void numberPushed(int x) {
   if(currentGas != 0){ //Editing gas value
+    int prev = gas[currentGas-1];
+    decimal prevPoint = gasPoint[currentGas-1];
     if (gasPoint[currentGas - 1] == SET) {
       throwDecimalSetError();
     }
@@ -414,8 +416,42 @@ void numberPushed(int x) {
       if (gasPoint[currentGas - 1] == CURRENT) {
         gasPoint[currentGas - 1] = SET;
       }
-      gas[currentGas - 1] *= 10;
-      gas[currentGas - 1] += x;
+      gas[currentGas - 1] = gas[currentGas - 1]*10 + x;
+
+
+      if(currentGas < 3){ //For CH4 and O2 CHECK MAXIMUM
+        if(gasPoint[currentGas-1] == SET && gas[currentGas-1] > 100*10){
+          gasPoint[currentGas-1] = prevPoint;
+          gas[currentGas-1] = prev;
+          throwMaximumExceededError();
+        }
+        else if(gas[currentGas-1] > 100){
+          gas[currentGas-1] = prev;
+          throwMaximumExceededError();
+        }
+      }
+      else if(currentGas == 3){ //For CO CHECK MAXIMUM
+        if((gasPoint[currentGas-1] == SET && gas[currentGas-1] > 500*10) || gas[currentGas-1] < 0){
+          gasPoint[currentGas-1] = prevPoint;
+          gas[currentGas-1] = prev;
+          throwMaximumExceededError();
+        }
+        else if(gas[currentGas-1] > 500){
+          gas[currentGas-1] = prev;
+          throwMaximumExceededError();
+        }
+      }
+      else{ //For IBUT CHECK MAXIMUM
+        if((gasPoint[currentGas-1] == SET && gas[currentGas-1] > 2000*10) || gas[currentGas-1] < 0){
+          gasPoint[currentGas-1] = prevPoint;
+          gas[currentGas-1] = prev;
+          throwMaximumExceededError();
+        }
+        else if(gas[currentGas-1] > 2000){
+          gas[currentGas-1] = prev;
+          throwMaximumExceededError();
+        }
+      }
     }
   }
   else{
@@ -534,6 +570,11 @@ void updateHome() {
 
 void throwDecimalSetError() {
   Serial.print(F("errorMessage.txt=\"Decimal is already set.\""));
+  serialEnd();
+}
+
+void throwMaximumExceededError() {
+  Serial.print(F("errorMessage.txt=\"Maximum value exceeded. Max CH4 and O2: 100. Max CO: 500. Max IBUT: 2000\""));
   serialEnd();
 }
 
