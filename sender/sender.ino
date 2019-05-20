@@ -490,43 +490,23 @@ void nineButtonPushCallback(void *ptr) {
 void updateValue() {
   if(currentGas != 0){ //Editing gas value
     if(gasPoint[currentGas-1] == SET) {
-      int t1 = gas[currentGas-1] / 10;
-      int t2 = gas[currentGas-1] - (gas[currentGas-1] / 10) * 10;
-      sprintf(val, "gasValue.txt=\"%i,%i\"", t1, t2);
-      Serial.print(val);
-      serialEnd();
-    }
-    else if(gasPoint[currentGas-1] == CURRENT) {
-      sprintf(val, "gasValue.txt=\"%i,\"", gas[currentGas-1]);
-      Serial.print(val);
-      serialEnd();
+      sprintf(val, "gasValue.txt=\"%i,%i\"", gas[currentGas-1] / 10, gas[currentGas-1] - (gas[currentGas-1] / 10) * 10);
     }
     else{
       sprintf(val, "gasValue.txt=\"%i\"", gas[currentGas-1]);
-      Serial.print(val);
-      serialEnd();
     }
   }
 
   else{ //Editing threshold value
     if(tresPoint[currentTres-1] == SET) {
-      int t1 = tres[currentTres-1] / 10;
-      int t2 = tres[currentTres-1] - (tres[currentTres-1] / 10) * 10;
-      sprintf(val, "gasValue.txt=\"%i,%i\"", t1, t2);
-      Serial.print(val);
-      serialEnd();
-    }
-    else if(tresPoint[currentTres-1] == CURRENT) {
-      sprintf(val, "gasValue.txt=\"%i,\"", tres[currentTres-1]);
-      Serial.print(val);
-      serialEnd();
+      sprintf(val, "gasValue.txt=\"%i,%i\"", tres[currentTres-1] / 10, tres[currentTres-1] - (tres[currentTres-1] / 10) * 10);
     }
     else{
       sprintf(val, "gasValue.txt=\"%i\"", tres[currentTres-1]);
-      Serial.print(val);
-      serialEnd();
     }
   }
+  Serial.print(val);
+  serialEnd();
 }
 
 void updateHome() {
@@ -719,9 +699,6 @@ void signalStrength(){
         }
         average /= 5;
         int strength = average;
-        sprintf(val, "signal.val=%i", strength);
-        Serial.print(val);
-        serialEnd();
         int pic;
         if(strength > -70){
           pic = 6;
