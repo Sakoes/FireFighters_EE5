@@ -94,17 +94,6 @@ boolean  alarmFlag2 =   false;
 
 boolean toggleDebounce = false;
 
-union  // saving Latitude
-{
-  float flat;
-  byte bytelat[4];
-} gps_lat;
-
-union  //saving Lon
-{
-  float flon;
-  byte bytelon[4];
-} gps_lon;
 
 
 void serialEnd() {
@@ -228,8 +217,6 @@ void updatePage(){
 
 void setup() {
   Serial.begin(9600);
-  gps_lat.flat = 50.874845;
-  gps_lon.flon = 4.707942;
 
   pinMode(LED1,  OUTPUT);
   pinMode(LED2,  OUTPUT);
