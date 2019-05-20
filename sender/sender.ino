@@ -238,22 +238,18 @@ void updateTres(){
   for(int i = 0; i < 2; i++){
     if(tresPoint[currentTres-i] == SET) {
       sprintf(val, "a%i.txt=\"%i,%i\"", i+1, tres[currentTres-i] / 10, tres[currentTres-i] - (tres[currentTres-i] / 10) * 10);
-      Serial.print(val);
-      serialEnd();
     }
     else{
       sprintf(val, "a%i.txt=\"%i\"", i+1, tres[currentTres-i]);
-      Serial.print(val);
-      serialEnd();
     }
+    Serial.print(val);
+    serialEnd();
   }
 }
 
 void backupTres(void *ptr){
   for (int i = 0; i < 8; i++) {
     tresBackup[i] = tres[i];
-  }
-  for (int i = 0; i < 8; i++) {
     tresPointBackup[i] = tresPoint[i];
   }
 }
