@@ -402,7 +402,7 @@ void numberPushed(int x) {
           gas[currentGas-1] = prev;
           throwMaximumExceededError();
         }
-        else if(gas[currentGas-1] > 100){
+        else if((gas[currentGas-1] > 100 && gasPoint[currentGas-1] == NO) || (gas[currentGas-1] > 100*10 && gasPoint[currentGas-1] == CURRENT)){
           gas[currentGas-1] = prev;
           throwMaximumExceededError();
         }
@@ -413,7 +413,7 @@ void numberPushed(int x) {
           gas[currentGas-1] = prev;
           throwMaximumExceededError();
         }
-        else if(gas[currentGas-1] > 500){
+        else if((gas[currentGas-1] > 500 && gasPoint[currentGas-1] == NO) || (gas[currentGas-1] > 500*10 && gasPoint[currentGas-1] == CURRENT)){
           gas[currentGas-1] = prev;
           throwMaximumExceededError();
         }
@@ -424,7 +424,7 @@ void numberPushed(int x) {
           gas[currentGas-1] = prev;
           throwMaximumExceededError();
         }
-        else if(gas[currentGas-1] > 2000){
+        else if((gas[currentGas-1] > 2000 && gasPoint[currentGas-1] == NO) || (gas[currentGas-1] > 2000*10 && gasPoint[currentGas-1] == CURRENT)){
           gas[currentGas-1] = prev;
           throwMaximumExceededError();
         }
@@ -492,6 +492,9 @@ void updateValue() {
     if(gasPoint[currentGas-1] == SET) {
       sprintf(val, "gasValue.txt=\"%i,%i\"", gas[currentGas-1] / 10, gas[currentGas-1] - (gas[currentGas-1] / 10) * 10);
     }
+    else if(gasPoint[currentGas-1] == CURRENT){
+      sprintf(val, "gasValue.txt=\"%i,\"", gas[currentGas-1]);
+    }
     else{
       sprintf(val, "gasValue.txt=\"%i\"", gas[currentGas-1]);
     }
@@ -500,6 +503,9 @@ void updateValue() {
   else{ //Editing threshold value
     if(tresPoint[currentTres-1] == SET) {
       sprintf(val, "gasValue.txt=\"%i,%i\"", tres[currentTres-1] / 10, tres[currentTres-1] - (tres[currentTres-1] / 10) * 10);
+    }
+    else if(tresPoint[currentTres-1] == CURRENT){
+      sprintf(val, "gasValue.txt=\"%i,\"", tres[currentTres-1]);
     }
     else{
       sprintf(val, "gasValue.txt=\"%i\"", tres[currentTres-1]);
