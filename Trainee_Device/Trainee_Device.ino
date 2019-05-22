@@ -276,6 +276,7 @@ void loop() {
 
   //An empty LoRa packet is sent to the instructor device, for signal strength
   sendData();
+  checkButtons();
   //batteryMeasurement();
   nexLoop(nex_listen_list);
 }
