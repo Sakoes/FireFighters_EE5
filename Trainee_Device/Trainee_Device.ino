@@ -398,8 +398,8 @@ void alarm() {
 }
 
 void batteryMeasurement() {
-  if(millis() - lastBatteryMeasurement > 10000){
-    float rawV = (analogRead(BATTERY) * 5) / 1024;      //figure out the battery voltage (4.98 is the actual reading of my 5V pin)                                              //some logic to set values
+  if(millis() - lastBatteryMeasurement > 10000 || millis() < 500){
+    float rawV = (analogRead(BATTERY) * 5.0) / 1024;      //figure out the battery voltage (4.98 is the actual reading of my 5V pin)                                              //some logic to set values
 
     int pic;
     if (rawV < 3.7) {                           //battery @ 3.5V or less
