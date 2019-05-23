@@ -64,10 +64,7 @@ NexTouch *nex_listen_list[] =
   NULL
 };  // End of touch event list
 
-
 int page = 0;
-
-
 int gas[4] = {0, 21, 0, 0}; //CH4 O2 CO IBUT
 decimal gasPoint[4];
 
@@ -90,11 +87,7 @@ const unsigned int neutralColor = 65535;
 
 boolean  alarmFlag1 =   false; //buzzer on when true
 boolean  alarmFlag2 =   false;
-
-
 boolean toggleDebounce = false;
-
-
 
 void serialEnd() {
   Serial.write(0xff);
@@ -159,23 +152,8 @@ void showThresholds(int num) {
 
 void sendData() {
   if (millis() > rssiMillis + 1000) {
-    //These pointers will point to the first byte of both floats
-    //byte *lon = (byte *)&longitude;
-    //byte *lat = (byte *)&latitude;
     LoRa.beginPacket();
     LoRa.write(destination);
-    // for (int i = 0; i < 4; i++) {
-    //   LoRa.write(gps_lat.bytelat[i]);
-    // }
-    // for (int i = 0; i < 4; i++) {
-    //   LoRa.write(gps_lon.bytelon[i]);
-    // }
-    // for(int i = 0; i < 4; i++){ //Write longitude
-    //   LoRa.write(*(lon+i));
-    // }
-    // for(int i = 0; i < 4; i++){ //Write latitude
-    //   LoRa.write(*(lat+i));
-    // }
     LoRa.endPacket();
     rssiMillis = millis();
     //Serial.print("gas1.bco=0");
@@ -256,7 +234,7 @@ void setup() {
   while (!Serial);
   //Serial.println("LoRa Receiver");
   LoRa.setPins(10, 9, 2);
-  //LoRa.setSPIFrequency(8E6);
+  //LoRa.setSPIFrequency(868E6);
   if (!LoRa.begin(868E6)) {
     Serial.println("Starting LoRa failed!");
     while (1);
@@ -268,12 +246,8 @@ void setup() {
 
 void loop() {
   loraReceive();
-
-
-
   //This function will check if an alarmFlag is true and will start the alarm if so
   alarm();
-
   //An empty LoRa packet is sent to the instructor device, for signal strength
   sendData();
   checkButtons();
@@ -515,7 +489,7 @@ void alarm() {
 }
 
 void batteryMeasurement() {
-  float rawV = (analogRead(BATTERY) * 4.74) / 1024;      //figure out the battery voltage (4.98 is the actual reading of my 5V pin)                                              //some logic to set values
+  float rawV = (analogRead(BATTERY) * 4.74) / 1024;      //figure out the battery voltage (4.74 is the actual reading of my 5V pin)                                              //some logic to set values
 
   int pic;
   if (rawV < 3.7) {                           //battery @ 3.5V or less
