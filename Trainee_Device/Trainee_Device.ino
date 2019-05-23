@@ -94,6 +94,7 @@ boolean  alarmFlag2 =   false;
 
 boolean toggleDebounce = false;
 
+unsigned int lastBatteryMeasurement;
 
 
 void serialEnd() {
@@ -277,7 +278,7 @@ void loop() {
   //An empty LoRa packet is sent to the instructor device, for signal strength
   sendData();
   checkButtons();
-  //batteryMeasurement();
+  batteryMeasurement();
   nexLoop(nex_listen_list);
 }
 
@@ -515,22 +516,24 @@ void alarm() {
 }
 
 void batteryMeasurement() {
-  float rawV = (analogRead(BATTERY) * 4.74) / 1024;      //figure out the battery voltage (4.98 is the actual reading of my 5V pin)                                              //some logic to set values
+  if(millis() - lastBatteryMeasurement > 10000){
+    float rawV = (analogRead(BATTERY) * 5) / 1024;      //figure out the battery voltage (4.98 is the actual reading of my 5V pin)                                              //some logic to set values
 
-  int pic;
-  if (rawV < 3.7) {                           //battery @ 3.5V or less
-    pic = 6;
+    int pic;
+    if (rawV < 3.7) {                           //battery @ 3.5V or less
+      pic = 6;
+    }
+    else if (rawV > 3.7 && rawV < 3.9) {               //battery @ 3.8V
+      pic = 3;
+    }
+    else if (rawV > 3.9 && rawV < 4.1) {               //battery @ 3.9V
+      pic = 5;
+    }
+    else if (rawV > 4.1) {                            //battery @ 4.2V 100% battery
+      pic = 0;
+    }
+    sprintf(val, "battery.pic=%i", pic);
+    Serial.print(val);
+    serialEnd();
   }
-  else if (rawV > 3.7 && rawV < 3.9) {               //battery @ 3.8V
-    pic = 3;
-  }
-  else if (rawV > 3.9 && rawV < 4.1) {               //battery @ 3.9V
-    pic = 5;
-  }
-  else if (rawV > 4.1) {                            //battery @ 4.2V 100% battery
-    pic = 0;
-  }
-  sprintf(val, "battery.pic=%i", pic);
-  Serial.print(val);
-  serialEnd();
 }
