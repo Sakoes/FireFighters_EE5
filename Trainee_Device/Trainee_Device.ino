@@ -64,10 +64,7 @@ NexTouch *nex_listen_list[] =
   NULL
 };  // End of touch event list
 
-
 int page = 0;
-
-
 int gas[4] = {0, 21, 0, 0}; //CH4 O2 CO IBUT
 decimal gasPoint[4];
 
@@ -90,8 +87,6 @@ const unsigned int neutralColor = 65535;
 
 boolean  alarmFlag1 =   false; //buzzer on when true
 boolean  alarmFlag2 =   false;
-
-
 boolean toggleDebounce = false;
 
 unsigned int lastBatteryMeasurement;
@@ -160,26 +155,10 @@ void showThresholds(int num) {
 
 void sendData() {
   if (millis() > rssiMillis + 1000) {
-    //These pointers will point to the first byte of both floats
-    //byte *lon = (byte *)&longitude;
-    //byte *lat = (byte *)&latitude;
     LoRa.beginPacket();
     LoRa.write(destination);
-    // for (int i = 0; i < 4; i++) {
-    //   LoRa.write(gps_lat.bytelat[i]);
-    // }
-    // for (int i = 0; i < 4; i++) {
-    //   LoRa.write(gps_lon.bytelon[i]);
-    // }
-    // for(int i = 0; i < 4; i++){ //Write longitude
-    //   LoRa.write(*(lon+i));
-    // }
-    // for(int i = 0; i < 4; i++){ //Write latitude
-    //   LoRa.write(*(lat+i));
-    // }
     LoRa.endPacket();
     rssiMillis = millis();
-    //Serial.print("gas1.bco=0");
   }
 }
 
@@ -214,8 +193,6 @@ void updatePage(){
     showThresholds4();
 }
 
-
-
 void setup() {
   Serial.begin(9600);
 
@@ -228,7 +205,6 @@ void setup() {
 
   startMillis = millis();
   rssiMillis = millis();
-
 
   nexInit();
 
@@ -253,11 +229,10 @@ void setup() {
   backButton3.attachPop(printData, &backButton3);
   backButton4.attachPop(printData, &backButton4);
 
-
   while (!Serial);
   //Serial.println("LoRa Receiver");
   LoRa.setPins(10, 9, 2);
-  //LoRa.setSPIFrequency(8E6);
+  //LoRa.setSPIFrequency(868E6);
   if (!LoRa.begin(868E6)) {
     Serial.println("Starting LoRa failed!");
     while (1);
@@ -266,15 +241,10 @@ void setup() {
 
 }
 
-
 void loop() {
   loraReceive();
-
-
-
   //This function will check if an alarmFlag is true and will start the alarm if so
   alarm();
-
   //An empty LoRa packet is sent to the instructor device, for signal strength
   sendData();
   checkButtons();
@@ -308,28 +278,6 @@ void checkButtons(){
   }
 }
 
-// void tresReceive(){
-//   // try to parse packet
-//   if (LoRa.parsePacket()) {
-//     while (LoRa.available()) {
-//       if (LoRa.read() == localAddress && LoRa.read() == 0x00) {
-//         for(int i = 0; i < 4; i++){
-//           gas[i] = word(LoRa.read(), LoRa.read());
-//           gasPoint[i] = word(LoRa.read(), LoRa.read());
-//         }
-//
-//         LoRa.beginPacket();
-//         LoRa.write(destination);
-//         for(int i = 0; i < 4; i++){
-//           LoRa.write(lowByte(gas[i]));
-//           LoRa.write(highByte(gas[i]));
-//           LoRa.write(lowByte(gasPoint[i]));
-//           LoRa.write(highByte(gasPoint[i]));
-//         }
-//         LoRa.endPacket();
-// }
-
-
 void loraReceive(){
   if(LoRa.parsePacket()){
     while(LoRa.available()){
@@ -343,15 +291,7 @@ void loraReceive(){
           LoRa.beginPacket();
           LoRa.write(destination);
           LoRa.write(0xAA);
-          // for(int i = 0; i < 4; i++){
-          //   LoRa.write(lowByte(gas[i]));
-          //   LoRa.write(highByte(gas[i]));
-          //   LoRa.write(lowByte(gasPoint[i]));
-          //   LoRa.write(highByte(gasPoint[i]));
-          // }
           LoRa.endPacket();
-
-          //Clear ackflag
           checkGasses();
         }
 
@@ -363,12 +303,6 @@ void loraReceive(){
           LoRa.beginPacket();
           LoRa.write(destination);
           LoRa.write(0xAA);
-          // for(int i = 0; i < 8; i++){
-          //   LoRa.write(lowByte(tres[i]));
-          //   LoRa.write(highByte(tres[i]));
-          //   LoRa.write(lowByte(tresPoint[i]));
-          //   LoRa.write(highByte(tresPoint[i]));
-          // }
           LoRa.endPacket();
         }
         updatePage();
@@ -376,56 +310,6 @@ void loraReceive(){
     }
   }
 }
-
-
-
-// void loraReceive(){
-//   // try to parse packet
-//   if (LoRa.parsePacket()) {
-//     while (LoRa.available()) {
-//       if(LoRa.read() == localAddress){
-//         if(LoRa.read() == 0xFF){}
-//       }
-//
-//
-//
-//       if (LoRa.read() == localAddress && LoRa.read() == 0xff) {
-//
-//         for(int i = 0; i < 4; i++){
-//           gas[i] = word(LoRa.read(), LoRa.read());
-//           gasPoint[i] = word(LoRa.read(), LoRa.read());
-//         }
-//
-//
-//         //Sending Acknowledgement
-//         //LoRa.beginPacket();
-//         //LoRa.write(destination);
-//         //LoRa.write(0xFF);//Acknowledgement
-//         //LoRa.endPacket();
-//         LoRa.beginPacket();
-//         LoRa.write(destination);
-//         for(int i = 0; i < 4; i++){
-//           LoRa.write(lowByte(gas[i]));
-//           LoRa.write(highByte(gas[i]));
-//           LoRa.write(lowByte(gasPoint[i]));
-//           LoRa.write(highByte(gasPoint[i]));
-//         }
-//         LoRa.endPacket();
-//
-//
-//         printData();
-//
-//         //Clear ackflag
-//         checkGasses();
-//       }
-//     }
-//
-//     // print RSSI of packet
-//     sprintf(val, "lora.txt=\"%i\"", LoRa.packetRssi());
-//     Serial.print(val);
-//     serialEnd();
-//   }
-// }
 
 int compareGas(int index){
   if(gasPoint[index] == SET){
@@ -444,8 +328,6 @@ int compareTres(int index){
     return tres[index]*10;
   }
 }
-
-
 
 void checkGasses(){
   for(int i = 0; i < 4; i++){
