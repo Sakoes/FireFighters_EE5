@@ -559,10 +559,10 @@ void sendTresholds(){
     LoRa.endPacket();
 
     //check a few times whether data has been received, to give time to the receiver to send the package
-    for(int i = 0; i < 10; i++){
+    for(int i = 0; i < 1000; i++){
       delay(i);
       int packetSize = LoRa.parsePacket();
-      if (packetSize) {
+      if (packetSize == 2) {
         // received a packet
 
         // read packet
@@ -586,7 +586,7 @@ void sendTresholds(){
 
   //Was an acknowledgement received?
   if(!ackReceived){
-    Serial.print(F("message.txt=\"No acknowledgement received. Is the other device turned on and in range?\""));
+    Serial.print(F("message.txt=\"Transmission problems possible.\""));
     serialEnd();
     //Notify user that sending failed and that there might be connectivity issues
   }
