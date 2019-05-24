@@ -124,11 +124,6 @@ void showThresholds(int num) {
     Serial.print(val);
     serialEnd();
   }
-  else if(tresPoint[2*(num-1)] == CURRENT) {
-    sprintf(val, "treshold1.txt=\"%i,\"", tres[2*(num-1)]);
-    Serial.print(val);
-    serialEnd();
-  }
   else{
     sprintf(val, "treshold1.txt=\"%i\"", tres[2*(num-1)]);
     Serial.print(val);
@@ -137,11 +132,6 @@ void showThresholds(int num) {
 
   if(tresPoint[2*(num-1)+1] == SET) {
     sprintf(val, "treshold2.txt=\"%i,%i\"", tres[2*(num-1)+1] / 10, tres[2*(num-1)+1] - (tres[2*(num-1)+1] / 10) * 10);
-    Serial.print(val);
-    serialEnd();
-  }
-  else if(tresPoint[2*(num-1)+1] == CURRENT) {
-    sprintf(val, "treshold2.txt=\"%i,\"", tres[2*(num-1)+1]);
     Serial.print(val);
     serialEnd();
   }
@@ -398,7 +388,7 @@ void alarm() {
 }
 
 void batteryMeasurement() {
-  if(millis() - lastBatteryMeasurement > 10000 || millis() < 500){
+  if(millis() - lastBatteryMeasurement > 1000){
     float rawV = (analogRead(BATTERY) * 5.0) / 1024;      //figure out the battery voltage (4.98 is the actual reading of my 5V pin)                                              //some logic to set values
 
     int pic;

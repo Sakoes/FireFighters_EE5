@@ -41,11 +41,11 @@ byte destination = 0xBB;      // destination to send to
 NexText gas1Text = NexText(0, 1, "gas1");
 NexText gas2Text = NexText(0, 2, "gas2");
 NexText gas3Text = NexText(0, 3, "gas3");
-NexText gas4Text = NexText(0, 15, "gas4");
+NexText gas4Text = NexText(0, 12, "gas4");
 NexText gas1ValueText = NexText(0, 6, "gas1value");
 NexText gas2ValueText = NexText(0, 7, "gas2value");
 NexText gas3ValueText = NexText(0, 8, "gas3value");
-NexText gas4ValueText = NexText(0, 16, "gas4value");
+NexText gas4ValueText = NexText(0, 13, "gas4value");
 NexButton sendButton = NexButton(0, 9, "send");
 
 NexButton settingsOkButton = NexButton(3, 3, "b1");
@@ -545,7 +545,7 @@ void sendTresholds(){
   int attempt = 0;
   bool ackReceived = false;
 
-  while(!ackReceived && attempt < 10) {
+  while(!ackReceived && attempt < 30) {
     attempt++;
     LoRa.beginPacket();
     LoRa.write(destination);
@@ -560,7 +560,7 @@ void sendTresholds(){
 
     //check a few times whether data has been received, to give time to the receiver to send the package
     for(int i = 0; i < 10; i++){
-      delay(5);
+      delay(i);
       int packetSize = LoRa.parsePacket();
       if (packetSize) {
         // received a packet
@@ -618,10 +618,9 @@ void sendData() {
     LoRa.endPacket();
 
     //check a few times whether data has been received, to give time to the receiver to send the package
-    for(int i = 0; i < 10; i++){
-      delay(5);
+    for(int i = 0; i < 1000; i++){
       int packetSize = LoRa.parsePacket();
-      if (packetSize){
+      if (packetSize == 2){
         // received a packet
 
         // read packet
@@ -815,7 +814,6 @@ void setup() {
 }
 
 void loop() {
-
   nexLoop(nex_listen_list);
   batteryMeasurement();
   signalStrength();
@@ -832,7 +830,7 @@ void checkMessage(){
 }
 
 void batteryMeasurement() {
-  if(millis() - lastBatteryMeasurement > 10000 || millis() < 500){
+  if(millis() - lastBatteryMeasurement > 1000){
     float rawV = (analogRead(BATTERY) * 5.0) / 1024;      //figure out the battery voltage (4.98 is the actual reading of my 5V pin)                                              //some logic to set values
     int pic;
     if (rawV < 3.7) {                           //battery @ 3.5V or less
